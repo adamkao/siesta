@@ -1,2 +1,3 @@
+textarea {overflow: auto;}
 img.hidden {display:none;}
 button:disabled {background: gray}
