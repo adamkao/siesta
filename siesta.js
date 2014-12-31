@@ -1,7 +1,6 @@
-var ctx, isfirstmove = true, selpiece = 'sun', oldimg,
-	redscore = 0, bluscore = 0, redpts = 0, blupts = 0,
-	edgelist = [], shaedgelist = [], sunedgelist = [],
-	hist = new Array(),
+var i, j, ctx, isfirstmove = true, selpiece = 'sun', oldimg,
+	redpts = 0, blupts = 0,
+	edgelist = [], sunedgelist = [], shaedgelist = [],
 	board = [
 		[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
 		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
@@ -17,23 +16,7 @@ var ctx, isfirstmove = true, selpiece = 'sun', oldimg,
 		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
 		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
 		[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-	],
-	move = {
-		piece1type 	: 'sun',
-		piece1x 	: 0,
-		piece1y 	: 0,
-		piece2type 	: 'red',
-		piece2x 	: 0,
-		piece2y 	: 1,
-		piece3type 	: 'sha',
-		piece3x 	: 0,
-		piece3y 	: 2,
-	}
-hist.push( board );
-
-
-function show( s ) { document.getElementById( 'output' ).value = s }
-
+	];
 
 function step( direction, cursor ) {
 	if 		(direction == 'n') { cursor.y-- }
@@ -49,16 +32,14 @@ function skiproofs( direction, cursor, present ) {
 		step( direction, cursor );
 	}
 }
-// count shadows in direction 
-function countsha( direction, cursor ) {
-	var count = 0;
+function addpointsfrom( pointct, direction, cursor, present, points ) {
 	while (board[cursor.x][cursor.y] == 'sha') {
-		count++;
+		pointct++;
 		step( direction, cursor );
 	}
-	return count
+	if (present.red) { points.red += pointct }
+	if (present.blu) { points.blu += pointct }
 }
-
 
 function shafindsiesta( direction, xsq, ysq, present ) {
 	var cursor = new Object;
@@ -80,56 +61,42 @@ function shafindsiesta( direction, xsq, ysq, present ) {
 }
 
 function findshapoints( xsq, ysq, points ) {
-	var present = new Object(), cursor = new Object(), pointct = 0;
+	var present = new Object(), cursor = new Object();
 	points.red = points.blu = 0;
 	present.red = present.blu = false;
 
 	if (shafindsiesta( 'n', xsq, ysq, present )) {
-		pointct = 1;
 		cursor.x = xsq, cursor.y = ysq;
 		step( 's', cursor );
-		pointct += countsha( 's', cursor );
-		if (present.red) { points.red += pointct }
-		if (present.blu) { points.blu += pointct }
+		addpointsfrom( 1, 's', cursor, present, points );
 	}
 	if (shafindsiesta( 'e', xsq, ysq, present )) {
-		pointct = 1;
 		cursor.x = xsq, cursor.y = ysq;
 		step( 'w', cursor );
-		pointct += countsha( 'w', cursor );
-		if (present.red) { points.red += pointct }
-		if (present.blu) { points.blu += pointct }
+		addpointsfrom( 1, 'w', cursor, present, points );
 	}
 	if (shafindsiesta( 'w', xsq, ysq, present )) {
-		pointct = 1;
 		cursor.x = xsq, cursor.y = ysq;
 		step( 'e', cursor );
-		pointct += countsha( 'e', cursor )
-		if (present.red) { points.red += pointct }
-		if (present.blu) { points.blu += pointct }
+		addpointsfrom( 1, 'e', cursor, present, points );
 	}
 	if (shafindsiesta( 's', xsq, ysq, present )) {
-		pointct = 1;
 		cursor.x = xsq, cursor.y = ysq;
 		step( 'n', cursor );
-		pointct += countsha( 'n', cursor )
-		if (present.red) { points.red += pointct }
-		if (present.blu) { points.blu += pointct }
+		addpointsfrom( 1, 'n', cursor, present, points );
 	}
 	return
 }
 
 function sunfindsiesta( direction, xsq, ysq, present, points ) {
-	var cursor = new Object, pointct = 0;
+	var cursor = new Object;
 	cursor.x = xsq, cursor.y = ysq;
 	present.red = present.blu = false;
 
 	step( direction, cursor );
 	skiproofs( direction, cursor, present );
 	if (board[cursor.x][cursor.y] != 'sha') { return }
-	pointct += countsha( direction, cursor );
-	if (present.red) { points.red += pointct }
-	if (present.blu) { points.blu += pointct }
+	addpointsfrom( 0, direction, cursor, present, points );
 	return
 }
 function findsunpoints( xsq, ysq, points ) {
@@ -157,9 +124,7 @@ function rooffindsiesta( direction, xsq, ysq, present, points ) {
 	step( direction, cursor );
 	skiproofs( direction, cursor, present );
 	if (board[cursor.x][cursor.y] != 'sha') { return }
-	pointct += countsha( direction, cursor );
-	if (present.red) { points.red += pointct }
-	if (present.blu) { points.blu += pointct }
+	addpointsfrom( 0, direction, cursor, present, points );
 	return
 }
 function findroofpoints( xsq, ysq, points, present ) {
@@ -180,17 +145,17 @@ function haspieceadjacent( xsq, ysq ) {
 	return (((board[xsq-1][ysq] != 0) && (board[xsq-1][ysq] != -1))
 		|| ((board[xsq+1][ysq] != 0) && (board[xsq+1][ysq] != -1))
 		|| ((board[xsq][ysq-1] != 0) && (board[xsq][ysq-1] != -1))
-		|| ((board[xsq][ysq+1] != 0) && (board[xsq][ysq+1] != -1)));
+		|| ((board[xsq][ysq+1] != 0) && (board[xsq][ysq+1] != -1)))
 }
 function hasnoadjacent( type, xsq, ysq ) {
 	return ((board[xsq-1][ysq] != type)
 		&& (board[xsq+1][ysq] != type)
 		&& (board[xsq][ysq-1] != type)
-		&& (board[xsq][ysq+1] != type));
+		&& (board[xsq][ysq+1] != type))
 }
 
 function updateedgelists() {
-	var i, j, xsq, ysq, present = new Object();
+	var xsq, ysq, present = new Object();
 
 	// all empty squares adjacent to pieces are on the edgelist
 	edgelist = [];
@@ -222,13 +187,34 @@ function updateedgelists() {
 		}
 	}
 }
+function findonlist( list, xsq, ysq ) {
+	if (list) {
+		for (i = 0; i < list.length; i++) {
+			if ((list[i][0] == xsq) && (list[i][1] == ysq)) {
+				return true
+			}
+		}
+	}
+	return false
+}
 
 function imgdrawat( piece, xsq, ysq ) {
 	ctx.drawImage( document.getElementById( piece ), xsq*50 - 45 , ysq*50 - 45 );
 }
+function drawfirstmove() {
+	for (i = 1; i <= 12; i++) {
+		for (j = 1; j <= 12; j++) {
+			imgdrawat( 'tar', i, j );
+		}
+	}
+}
+function initfirstmove( xsq, ysq ) {
+	if (selpiece == 'sha') { return }
+	board[xsq][ysq] = selpiece;
+	updateedgelists();
+	isfirstmove = false;
+}
 function drawpieces() {
-	var i, j;
-
 	for (i = 1; i <= 12; i++) {
 		for (j = 1; j <= 12; j++) {
 			if (board[i][j] != 0) {
@@ -254,7 +240,6 @@ function drawpieces() {
 		}
 	}
 }
-
 function drawboard() {
 	ctx.clearRect( 0, 0, 600, 600 );
 	ctx.beginPath();
@@ -268,61 +253,43 @@ function drawboard() {
 	ctx.lineWidth = 1;
 	ctx.stroke();
 }
-
-
-function drawfirstmove() {
-	var i, j;
-	for (i = 1; i <= 12; i++) {
-		for (j = 1; j <= 12; j++) {
-			imgdrawat( 'tar', i, j );
-		}
-	}
-}
-
 function updatedisplay() {
 	drawboard();
 	if (isfirstmove && (selpiece != 'sha')) { drawfirstmove(); }
 	else { drawpieces(); }
 }
-function initedgelist( elist, xsq, ysq ) {
-	if (xsq != 1) { elist.push( [xsq-1, ysq] ) }
-	if (ysq != 1) { elist.push( [xsq, ysq-1] ) }
-	if (xsq != 12) { elist.push( [xsq+1, ysq] ) }
-	if (ysq != 12) { elist.push( [xsq, ysq+1] ) }
+function switchselpiece( newpiece, id ) {
+	selpiece = newpiece;
+	oldimg.css( 'border', 'solid 3px white' );
+	$( id ).css( 'border', 'solid 3px green' );
+	oldimg = $( id );
+	updatedisplay();
 }
-function initfirstmove( xsq, ysq ) {
-	if (selpiece == 'sha') { return }
-	board[xsq][ysq] = selpiece;
-	edgelist = sunedgelist = shaedgelist = [];
-	initedgelist( edgelist, xsq, ysq );
-	initedgelist( sunedgelist, xsq, ysq );
-	if (selpiece != 'sun') { initedgelist( shaedgelist, xsq, ysq ) }
-	isfirstmove = false;
+function showscore( points ) {
+	$( '#output' ).val( 'this move red: ' + points.red + ', blue: ' + points.blu + '\n'
+		+ 'total red: ' + redpts + ', blue: ' + blupts );
 }
-
-function domove( board, xsq, ysq, points ) {
+function domove( xsq, ysq, points ) {
 	board[xsq][ysq] = selpiece;
 	redpts += points.red, blupts += points.blu;
 	updateedgelists();
+	drawboard();
+	drawpieces();
+	showscore( points );
 }
 
 $( document ).ready( function() {
-	var i, x = 0, y = 0, xsq = 0, ysq = 0,
+	var x = 0, y = 0, xsq = 0, ysq = 0,
 		points = new Object(), present = new Object();
 	ctx = document.getElementById( 'board' ).getContext( '2d' );
-
 	updatedisplay();
-
 	$( '#sun' ).css( 'border', 'solid 3px green' );
 	oldimg = $( '#sun' );
-
-	$( '#done' ).prop( 'disabled', false );
-	$( '#undo' ).prop( 'disabled', true );
+	$( '#output' ).val( '' );
 
 	$( '#board' ).mousemove( function( e ) {
 		x = e.pageX - this.offsetLeft,	y = e.pageY - this.offsetTop;
 		xsq = Math.ceil( x/50 ),		ysq = Math.ceil( y/50 );
-
 		updatedisplay();
 		if (board[xsq][ysq] == 0) {
 			imgdrawat( selpiece, xsq, ysq );
@@ -335,100 +302,26 @@ $( document ).ready( function() {
 				findroofpoints( xsq, ysq, points, present );
 			}
 		}
-//		show( 'red: ' + points.red + ', blue: ' + points.blu );
+		showscore( points );
 	});
-
 	$( '#board' ).click( function( e ) {
 		x = e.pageX - this.offsetLeft,	y = e.pageY - this.offsetTop;
 		xsq = Math.ceil( x/50 ),		ysq = Math.ceil( y/50 );
-
 		if (board[xsq][ysq] != 0) { return }
-
-		hist.push( board );
-		board = $.extend( true, [], board );
-		$( '#undo' ).prop( 'disabled', false );
-
 		if (isfirstmove == true) {
 			initfirstmove( xsq, ysq );
 			return
 		}
-
-		if (selpiece == 'sun') {
-			for (i=0; i<sunedgelist.length; i++) {
-				if ((sunedgelist[i][0] == xsq) && (sunedgelist[i][1] == ysq)) {
-					points.red = points.blu = 0;
-					findsunpoints( xsq, ysq, points );
-					domove( board, xsq, ysq, points );
-					drawboard();
-					drawpieces();
-					break;
-				}
-			}
-		} else if (selpiece == 'sha') {
-			for (i=0; i<shaedgelist.length; i++) {
-				if ((shaedgelist[i][0] == xsq) && (shaedgelist[i][1] == ysq)) {
-					points.red = points.blu = 0;
-					findshapoints( xsq, ysq, points );
-					domove( board, xsq, ysq, points );
-					drawboard();
-					drawpieces();
-					break;
-				}
-			}
-		} else {
-			for (i=0; i<edgelist.length; i++) {
-				if ((edgelist[i][0] == xsq) && (edgelist[i][1] == ysq)) {
-					domove( board, xsq, ysq, points );
-					drawboard();
-					drawpieces();
-					break;
-				}
-			}
+		if ((selpiece == 'sun') && findonlist( sunedgelist, xsq, ysq )) {
+			domove( xsq, ysq, points );
+		} else if ((selpiece == 'sha') && findonlist( shaedgelist, xsq, ysq )) {
+			domove( xsq, ysq, points );				
+		} else if (findonlist( edgelist, xsq, ysq )) {
+			domove( xsq, ysq, points );				
 		}
 	});
-
-	$( '#sun' ).click( function() {
-		selpiece = 'sun';
-		oldimg.css( 'border', 'solid 3px white' );
-		$( this ).css( 'border', 'solid 3px green' );
-		oldimg = $( this );
-		updatedisplay();
-	});
-	$( '#sha' ).click( function() {
-		selpiece = 'sha';
-		oldimg.css( 'border', 'solid 3px white' );
-		$( this ).css( 'border', 'solid 3px green' );
-		oldimg = $( this );
-		updatedisplay();
-	});
-	$( '#red' ).click( function() {
-		selpiece = 'red';
-		oldimg.css( 'border', 'solid 3px white' );
-		$( this ).css( 'border', 'solid 3px green' );
-		oldimg = $( this );
-		updatedisplay();
-	});
-	$( '#blu' ).click( function() {
-		selpiece = 'blu';
-		oldimg.css( 'border', 'solid 3px white' );
-		$( this ).css( 'border', 'solid 3px green' );
-		oldimg = $( this );
-		updatedisplay();
-	});
-	$( '#undo' ).click( function( e ) {
-		board = history.pop();
-		updateedgelists( xsq, ysq );
-		if (history.length == 1) {
-			isfirstmove = true;			
-			$( '#undo' ).prop( 'disabled', true );
-		}
-		updatedisplay();
-	});
-	$( '#done' ).click( function( e ) {
-		$.post('api.php', { game_number: '1', move_number: '1', board: board, move: move }, function(data){
-	        $('#output').html(data);
-	    }).fail(function() {
-	        alert( "Posting failed." );
-	    });
-	});
+	$( '#sun' ).click( function() {	switchselpiece( 'sun', this ) });
+	$( '#sha' ).click( function() {	switchselpiece( 'sha', this ) });
+	$( '#red' ).click( function() {	switchselpiece( 'red', this ) });
+	$( '#blu' ).click( function() {	switchselpiece( 'blu', this ) });
 });
