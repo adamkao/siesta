@@ -42,8 +42,7 @@ function addpointsfrom( pointct, direction, cursor, present, points ) {
 }
 
 function shafindsiesta( direction, xsq, ysq, present ) {
-	var cursor = new Object;
-	cursor.x = xsq, cursor.y = ysq;
+	var cursor = { x:xsq, y: ysq };
 	present.red = present.blu = false;
 
 	step( direction, cursor );
@@ -61,9 +60,9 @@ function shafindsiesta( direction, xsq, ysq, present ) {
 }
 
 function findshapoints( xsq, ysq, points ) {
-	var present = new Object(), cursor = new Object();
+	var present = { red: false, blu: false},
+		cursor = { x: xsq, y: ysq };
 	points.red = points.blu = 0;
-	present.red = present.blu = false;
 
 	if (shafindsiesta( 'n', xsq, ysq, present )) {
 		cursor.x = xsq, cursor.y = ysq;
@@ -291,14 +290,20 @@ $( document ).ready( function() {
 		x = e.pageX - this.offsetLeft,	y = e.pageY - this.offsetTop;
 		xsq = Math.ceil( x/50 ),		ysq = Math.ceil( y/50 );
 		updatedisplay();
-		if (board[xsq][ysq] == 0) {
-			imgdrawat( selpiece, xsq, ysq );
-			points.red = points.blu = 0;
-			if 		(selpiece == 'sun') { findsunpoints( xsq, ysq, points ) }
-			else if (selpiece == 'sha') { findshapoints( xsq, ysq, points ) }
-			else {
-				if 		(selpiece == 'red') { present.red = true, present.blu = false }
-				else if (selpiece == 'blu') { present.red = false, present.blu = true }
+		imgdrawat( selpiece, xsq, ysq );
+		if (isfirstmove) {
+			return
+		}
+		points.red = points.blu = 0;
+		if 		((selpiece == 'sun') && findonlist( sunedgelist, xsq, ysq )) { findsunpoints( xsq, ysq, points ) }
+		else if ((selpiece == 'sha') && findonlist( shaedgelist, xsq, ysq )) { findshapoints( xsq, ysq, points ) }
+		else {
+			if 		((selpiece == 'red') && findonlist( edgelist, xsq, ysq )) {
+				present.red = true, present.blu = false;
+				findroofpoints( xsq, ysq, points, present );
+			}				
+			else if ((selpiece == 'blu') && findonlist( edgelist, xsq, ysq )) {
+				present.red = false, present.blu = true;
 				findroofpoints( xsq, ysq, points, present );
 			}
 		}
@@ -308,16 +313,14 @@ $( document ).ready( function() {
 		x = e.pageX - this.offsetLeft,	y = e.pageY - this.offsetTop;
 		xsq = Math.ceil( x/50 ),		ysq = Math.ceil( y/50 );
 		if (board[xsq][ysq] != 0) { return }
-		if (isfirstmove == true) {
+		if (isfirstmove) {
 			initfirstmove( xsq, ysq );
 			return
 		}
-		if ((selpiece == 'sun') && findonlist( sunedgelist, xsq, ysq )) {
-			domove( xsq, ysq, points );
-		} else if ((selpiece == 'sha') && findonlist( shaedgelist, xsq, ysq )) {
-			domove( xsq, ysq, points );				
-		} else if (findonlist( edgelist, xsq, ysq )) {
-			domove( xsq, ysq, points );				
+		if (((selpiece == 'sun') && findonlist( sunedgelist, xsq, ysq ))
+			|| ((selpiece == 'sha') && findonlist( shaedgelist, xsq, ysq ))
+			|| (((selpiece == 'red') || (selpiece == 'blu')) && (findonlist( edgelist, xsq, ysq )))) {
+			domove( xsq, ysq, points );							
 		}
 	});
 	$( '#sun' ).click( function() {	switchselpiece( 'sun', this ) });
