@@ -1,5 +1,5 @@
-var i, j, ctx, isfirstmove = true, selpiece = 'sun', oldimg,
-	redpts = 0, blupts = 0,
+var i, j, ctx, isfirstmove = true, selpiece = '#sun',
+	score = { red: 0, blu: 0 },
 	edgelist = [], sunedgelist = [], shaedgelist = [],
 	board = [
 		[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
@@ -26,14 +26,14 @@ function step( direction, cursor ) {
 }
 // step over any number of roofs, remembering what colors we hit
 function skiproofs( direction, cursor, present ) {
-	while ((board[cursor.x][cursor.y] == 'red') || (board[cursor.x][cursor.y] == 'blu')) {
-		if 		(board[cursor.x][cursor.y] == 'red') { present.red = true }
-		else if (board[cursor.x][cursor.y] == 'blu') { present.blu = true }
+	while ((board[cursor.x][cursor.y] == '#red') || (board[cursor.x][cursor.y] == '#blu')) {
+		if 		(board[cursor.x][cursor.y] == '#red') { present.red = true }
+		else if (board[cursor.x][cursor.y] == '#blu') { present.blu = true }
 		step( direction, cursor );
 	}
 }
 function addpointsfrom( pointct, direction, cursor, present, points ) {
-	while (board[cursor.x][cursor.y] == 'sha') {
+	while (board[cursor.x][cursor.y] == '#sha') {
 		pointct++;
 		step( direction, cursor );
 	}
@@ -46,14 +46,14 @@ function shafindsiesta( direction, xsq, ysq, present ) {
 	present.red = present.blu = false;
 
 	step( direction, cursor );
-	while (board[cursor.x][cursor.y] == 'sha') {
+	while (board[cursor.x][cursor.y] == '#sha') {
 		step( direction, cursor );
 	}
-	if ((board[cursor.x][cursor.y] != 'red') && (board[cursor.x][cursor.y] != 'blu')) {
+	if ((board[cursor.x][cursor.y] != '#red') && (board[cursor.x][cursor.y] != '#blu')) {
 		return false
 	}
 	skiproofs( direction, cursor, present );
-	if (board[cursor.x][cursor.y] == 'sun') {
+	if (board[cursor.x][cursor.y] == '#sun') {
 		return true
 	}
 	return false
@@ -62,81 +62,67 @@ function shafindsiesta( direction, xsq, ysq, present ) {
 function findshapoints( xsq, ysq, points ) {
 	var present = { red: false, blu: false},
 		cursor = { x: xsq, y: ysq };
-	points.red = points.blu = 0;
-
 	if (shafindsiesta( 'n', xsq, ysq, present )) {
-		cursor.x = xsq, cursor.y = ysq;
+		cursor = { x: xsq, y: ysq };
 		step( 's', cursor );
 		addpointsfrom( 1, 's', cursor, present, points );
 	}
 	if (shafindsiesta( 'e', xsq, ysq, present )) {
-		cursor.x = xsq, cursor.y = ysq;
+		cursor = { x: xsq, y: ysq };
 		step( 'w', cursor );
 		addpointsfrom( 1, 'w', cursor, present, points );
 	}
 	if (shafindsiesta( 'w', xsq, ysq, present )) {
-		cursor.x = xsq, cursor.y = ysq;
+		cursor = { x: xsq, y: ysq };
 		step( 'e', cursor );
 		addpointsfrom( 1, 'e', cursor, present, points );
 	}
 	if (shafindsiesta( 's', xsq, ysq, present )) {
-		cursor.x = xsq, cursor.y = ysq;
+		cursor = { x: xsq, y: ysq };
 		step( 'n', cursor );
 		addpointsfrom( 1, 'n', cursor, present, points );
 	}
 	return
 }
 
-function sunfindsiesta( direction, xsq, ysq, present, points ) {
-	var cursor = new Object;
-	cursor.x = xsq, cursor.y = ysq;
-	present.red = present.blu = false;
-
+function sunfindsiesta( direction, xsq, ysq, points ) {
+	var cursor = { x: xsq, y: ysq },
+		present = { red: false, blu: false };
 	step( direction, cursor );
 	skiproofs( direction, cursor, present );
-	if (board[cursor.x][cursor.y] != 'sha') { return }
+	if (board[cursor.x][cursor.y] != '#sha') { return }
 	addpointsfrom( 0, direction, cursor, present, points );
 	return
 }
 function findsunpoints( xsq, ysq, points ) {
-	var present = new Object();
-	points.red = points.blu = 0;
-
-	sunfindsiesta( 'n', xsq, ysq, present, points );
-	sunfindsiesta( 'e', xsq, ysq, present, points );
-	sunfindsiesta( 'w', xsq, ysq, present, points );
-	sunfindsiesta( 's', xsq, ysq, present, points );
+	sunfindsiesta( 'n', xsq, ysq, points );
+	sunfindsiesta( 'e', xsq, ysq, points );
+	sunfindsiesta( 'w', xsq, ysq, points );
+	sunfindsiesta( 's', xsq, ysq, points );
 }
 
 function rooffindsiesta( direction, xsq, ysq, present, points ) {
-	var cursor = new Object, pointct = 0;
-
-	cursor.x = xsq, cursor.y = ysq;
+	var cursor, tpres = present;
+	cursor = { x:xsq, y: ysq };
 	step( direction, cursor );
-	skiproofs( direction, cursor, present );
-	if (board[cursor.x][cursor.y] != 'sun') { return }
+	skiproofs( direction, cursor, tpres );
+	if (board[cursor.x][cursor.y] != '#sun') { return }
 	if 		(direction == 'n') { direction = 's' }
 	else if (direction == 'e') { direction = 'w' }
 	else if (direction == 'w') { direction = 'e' }
 	else if (direction == 's') { direction = 'n' }
-	cursor.x = xsq, cursor.y = ysq;
+	cursor = { x:xsq, y: ysq };
 	step( direction, cursor );
-	skiproofs( direction, cursor, present );
-	if (board[cursor.x][cursor.y] != 'sha') { return }
-	addpointsfrom( 0, direction, cursor, present, points );
+	skiproofs( direction, cursor, tpres );
+	if (board[cursor.x][cursor.y] != '#sha') { return }
+	addpointsfrom( 0, direction, cursor, tpres, points );
 	return
 }
 function findroofpoints( xsq, ysq, points, present ) {
-	var tpres = new Object();
-
-	tpres.red = present.red, tpres.blu = present.blu;
-	rooffindsiesta( 'n', xsq, ysq, tpres, points );
-	tpres.red = present.red, tpres.blu = present.blu;
-	rooffindsiesta( 'e', xsq, ysq, tpres, points );
-	tpres.red = present.red, tpres.blu = present.blu;
-	rooffindsiesta( 'w', xsq, ysq, tpres, points );
-	tpres.red = present.red, tpres.blu = present.blu;
-	rooffindsiesta( 's', xsq, ysq, tpres, points );
+	rooffindsiesta( 'n', xsq, ysq, present, points );
+	rooffindsiesta( 'e', xsq, ysq, present, points );
+	rooffindsiesta( 'w', xsq, ysq, present, points );
+	rooffindsiesta( 's', xsq, ysq, present, points );
 }
 
 
@@ -154,8 +140,7 @@ function hasnoadjacent( type, xsq, ysq ) {
 }
 
 function updateedgelists() {
-	var xsq, ysq, present = new Object();
-
+	var xsq, ysq, present = { red: false, blu: false };
 	// all empty squares adjacent to pieces are on the edgelist
 	edgelist = [];
 	for (i = 1; i <= 12; i++) {
@@ -169,7 +154,7 @@ function updateedgelists() {
 	sunedgelist = [];
 	for (i = 0; i < edgelist.length; i++) {
 		xsq = edgelist[i][0], ysq = edgelist[i][1];
-		if (hasnoadjacent( 'sha', xsq, ysq )) {
+		if (hasnoadjacent( '#sha', xsq, ysq )) {
 			sunedgelist.push( [xsq, ysq] );			
 		}
 	}
@@ -177,7 +162,7 @@ function updateedgelists() {
 	shaedgelist = [];
 	for (i = 0; i < edgelist.length; i++) {
 		xsq = edgelist[i][0], ysq = edgelist[i][1];
-		if (hasnoadjacent( 'sun', xsq, ysq )
+		if (hasnoadjacent( '#sun', xsq, ysq )
 			&& (shafindsiesta( 'n', xsq, ysq, present )
 				|| shafindsiesta( 'e', xsq, ysq, present )
 				|| shafindsiesta( 'w', xsq, ysq, present )
@@ -198,17 +183,17 @@ function findonlist( list, xsq, ysq ) {
 }
 
 function imgdrawat( piece, xsq, ysq ) {
-	ctx.drawImage( document.getElementById( piece ), xsq*50 - 45 , ysq*50 - 45 );
+	ctx.drawImage( $( piece )[0], xsq*50 - 45 , ysq*50 - 45 );
 }
 function drawfirstmove() {
 	for (i = 1; i <= 12; i++) {
 		for (j = 1; j <= 12; j++) {
-			imgdrawat( 'tar', i, j );
+			imgdrawat( '#tar', i, j );
 		}
 	}
 }
 function initfirstmove( xsq, ysq ) {
-	if (selpiece == 'sha') { return }
+	if (selpiece == '#sha') { return }
 	board[xsq][ysq] = selpiece;
 	updateedgelists();
 	isfirstmove = false;
@@ -221,21 +206,21 @@ function drawpieces() {
 			}
 		}
 	}
-	if (selpiece == 'sun') {
+	if (selpiece == '#sun') {
 		if (sunedgelist) {
 			for (i = 0; i < sunedgelist.length; i++) {
-				imgdrawat( 'tar', sunedgelist[i][0], sunedgelist[i][1] )
+				imgdrawat( '#tar', sunedgelist[i][0], sunedgelist[i][1] )
 			}
 		}
-	} else if (selpiece == 'sha') {
+	} else if (selpiece == '#sha') {
 		if (shaedgelist) {
 			for (i = 0; i < shaedgelist.length; i++) {
-				imgdrawat( 'tar', shaedgelist[i][0], shaedgelist[i][1] )
+				imgdrawat( '#tar', shaedgelist[i][0], shaedgelist[i][1] )
 			}
 		}
 	} else if (edgelist) {
 		for (i = 0; i < edgelist.length; i++) {
-			imgdrawat( 'tar', edgelist[i][0], edgelist[i][1] )
+			imgdrawat( '#tar', edgelist[i][0], edgelist[i][1] )
 		}
 	}
 }
@@ -254,23 +239,22 @@ function drawboard() {
 }
 function updatedisplay() {
 	drawboard();
-	if (isfirstmove && (selpiece != 'sha')) { drawfirstmove(); }
+	if (isfirstmove && (selpiece != '#sha')) { drawfirstmove(); }
 	else { drawpieces(); }
 }
-function switchselpiece( newpiece, id ) {
-	selpiece = newpiece;
-	oldimg.css( 'border', 'solid 3px white' );
-	$( id ).css( 'border', 'solid 3px green' );
-	oldimg = $( id );
+function switchselpiece( id ) {
+	$( selpiece ).css( 'border', 'solid 3px white' );
+	selpiece = id;
+	$( selpiece ).css( 'border', 'solid 3px green' );
 	updatedisplay();
 }
 function showscore( points ) {
 	$( '#output' ).val( 'this move red: ' + points.red + ', blue: ' + points.blu + '\n'
-		+ 'total red: ' + redpts + ', blue: ' + blupts );
+		+ 'total red: ' + score.red + ', blue: ' + score.blu );
 }
 function domove( xsq, ysq, points ) {
 	board[xsq][ysq] = selpiece;
-	redpts += points.red, blupts += points.blu;
+	score.red += points.red, score.blu += points.blu;
 	updateedgelists();
 	drawboard();
 	drawpieces();
@@ -279,11 +263,12 @@ function domove( xsq, ysq, points ) {
 
 $( document ).ready( function() {
 	var x = 0, y = 0, xsq = 0, ysq = 0,
-		points = new Object(), present = new Object();
+		points = { red: 0, blu: 0 },
+		present = { red: false, blu: false };
 	ctx = document.getElementById( 'board' ).getContext( '2d' );
 	updatedisplay();
-	$( '#sun' ).css( 'border', 'solid 3px green' );
-	oldimg = $( '#sun' );
+	selpiece = '#sun';
+	$( selpiece ).css( 'border', 'solid 3px green' );
 	$( '#output' ).val( '' );
 
 	$( '#board' ).mousemove( function( e ) {
@@ -294,15 +279,15 @@ $( document ).ready( function() {
 		if (isfirstmove) {
 			return
 		}
-		points.red = points.blu = 0;
-		if 		((selpiece == 'sun') && findonlist( sunedgelist, xsq, ysq )) { findsunpoints( xsq, ysq, points ) }
-		else if ((selpiece == 'sha') && findonlist( shaedgelist, xsq, ysq )) { findshapoints( xsq, ysq, points ) }
+		points = { red: 0, blu: 0 };
+		if 		((selpiece == '#sun') && findonlist( sunedgelist, xsq, ysq )) { findsunpoints( xsq, ysq, points ) }
+		else if ((selpiece == '#sha') && findonlist( shaedgelist, xsq, ysq )) { findshapoints( xsq, ysq, points ) }
 		else {
-			if 		((selpiece == 'red') && findonlist( edgelist, xsq, ysq )) {
+			if 		((selpiece == '#red') && findonlist( edgelist, xsq, ysq )) {
 				present.red = true, present.blu = false;
 				findroofpoints( xsq, ysq, points, present );
 			}				
-			else if ((selpiece == 'blu') && findonlist( edgelist, xsq, ysq )) {
+			else if ((selpiece == '#blu') && findonlist( edgelist, xsq, ysq )) {
 				present.red = false, present.blu = true;
 				findroofpoints( xsq, ysq, points, present );
 			}
@@ -317,14 +302,14 @@ $( document ).ready( function() {
 			initfirstmove( xsq, ysq );
 			return
 		}
-		if (((selpiece == 'sun') && findonlist( sunedgelist, xsq, ysq ))
-			|| ((selpiece == 'sha') && findonlist( shaedgelist, xsq, ysq ))
-			|| (((selpiece == 'red') || (selpiece == 'blu')) && (findonlist( edgelist, xsq, ysq )))) {
+		if (((selpiece == '#sun') && findonlist( sunedgelist, xsq, ysq ))
+			|| ((selpiece == '#sha') && findonlist( shaedgelist, xsq, ysq ))
+			|| (((selpiece == '#red') || (selpiece == '#blu')) && (findonlist( edgelist, xsq, ysq )))) {
 			domove( xsq, ysq, points );							
 		}
 	});
-	$( '#sun' ).click( function() {	switchselpiece( 'sun', this ) });
-	$( '#sha' ).click( function() {	switchselpiece( 'sha', this ) });
-	$( '#red' ).click( function() {	switchselpiece( 'red', this ) });
-	$( '#blu' ).click( function() {	switchselpiece( 'blu', this ) });
+	$( '#sun' ).click( function() {	switchselpiece( '#sun' ) } );
+	$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
+	$( '#red' ).click( function() {	switchselpiece( '#red' ) } );
+	$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
 });
