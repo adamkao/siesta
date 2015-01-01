@@ -39,6 +39,7 @@ function skiproofs( direction, cursor, present ) {
 		step( direction, cursor );
 	}
 }
+// count and score shadows adding points to the colors present
 function addpointsfrom( pointct, direction, cursor, present, points ) {
 	while (board[cursor.x][cursor.y] == '#sha') {
 		pointct++;
@@ -91,13 +92,13 @@ function findsunpoints( xsq, ysq, points ) {
 }
 
 function rooffindsiesta( direction, xsq, ysq, present, points ) {
-	var cursor, tpres = present;
-	cursor = { x:xsq, y: ysq };
+	var cursor = { x: xsq, y: ysq },
+		tpres = present;
 	step( direction, cursor );
 	skiproofs( direction, cursor, tpres );
 	if (board[cursor.x][cursor.y] != '#sun') { return }
 	direction = reverse( direction );
-	cursor = { x:xsq, y: ysq };
+	cursor = { x: xsq, y: ysq };
 	step( direction, cursor );
 	skiproofs( direction, cursor, tpres );
 	if (board[cursor.x][cursor.y] != '#sha') { return }
@@ -208,6 +209,10 @@ function drawpieces() {
 		}
 	}
 }
+function showscore() {
+	$( '#output' ).val( 'this move red: ' + thismove.red + ', blue: ' + thismove.blu + '\n'
+		+ 'total red: ' + score.red + ', blue: ' + score.blu );
+}
 function updatedisplay() {
 	drawboard();
 	drawpieces();
@@ -218,10 +223,6 @@ function switchselpiece( id ) {
 	selpiece = id;
 	$( selpiece ).css( 'border', 'solid 3px green' );
 	updatedisplay();
-}
-function showscore() {
-	$( '#output' ).val( 'this move red: ' + thismove.red + ', blue: ' + thismove.blu + '\n'
-		+ 'total red: ' + score.red + ', blue: ' + score.blu );
 }
 function domove( xsq, ysq ) {
 	board[xsq][ysq] = selpiece;
@@ -240,12 +241,11 @@ function mousemove( e ) {
 	else {
 		if 		((selpiece == '#red') && findonlist( edgelist, xsq, ysq )) {
 			present = { red: true, blu: false };
-			findroofpoints( xsq, ysq, thismove, present );
 		}				
 		else if ((selpiece == '#blu') && findonlist( edgelist, xsq, ysq )) {
 			present = { red: false, blu: true };
-			findroofpoints( xsq, ysq, thismove, present );
 		}
+		findroofpoints( xsq, ysq, thismove, present );
 	}
 	updatedisplay();
 	imgdrawat( selpiece, xsq, ysq );
@@ -287,7 +287,6 @@ function firstclick( e ) {
 }
 $( document ).ready( function() {
 	ctx = document.getElementById( 'board' ).getContext( '2d' );
-	updatedisplay();
 	selpiece = '#sun';
 	$( selpiece ).css( 'border', 'solid 3px green' );
 	$( '#output' ).val( '' );
@@ -297,4 +296,5 @@ $( document ).ready( function() {
 	$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
 	$( '#red' ).click( function() {	switchselpiece( '#red' ) } );
 	$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
+	updatedisplay();
 });
