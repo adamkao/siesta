@@ -1,5 +1,5 @@
 var i, j, ctx, isfirstmove = true, selpiece = '#sun',
-	score = { red: 0, blu: 0 },
+	score = { red: 0, blu: 0 }, thismove = { red: 0, blu: 0 },
 	edgelist = [], sunedgelist = [], shaedgelist = [],
 	board = [
 		[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
@@ -125,7 +125,6 @@ function findroofpoints( xsq, ysq, points, present ) {
 	rooffindsiesta( 's', xsq, ysq, present, points );
 }
 
-
 function haspieceadjacent( xsq, ysq ) {
 	return (((board[xsq-1][ysq] != 0) && (board[xsq-1][ysq] != -1))
 		|| ((board[xsq+1][ysq] != 0) && (board[xsq+1][ysq] != -1))
@@ -185,18 +184,18 @@ function findonlist( list, xsq, ysq ) {
 function imgdrawat( piece, xsq, ysq ) {
 	ctx.drawImage( $( piece )[0], xsq*50 - 45 , ysq*50 - 45 );
 }
-function drawfirstmove() {
-	for (i = 1; i <= 12; i++) {
-		for (j = 1; j <= 12; j++) {
-			imgdrawat( '#tar', i, j );
-		}
+function drawboard() {
+	ctx.clearRect( 0, 0, 600, 600 );
+	ctx.beginPath();
+	for (var i=0; i<13; i++) {
+		ctx.moveTo( i*50 + .5, .5 );
+		ctx.lineTo( i*50 + .5, 600.5 );
+		ctx.moveTo( .5, i*50 + .5 );
+		ctx.lineTo( 600.5, i*50 + .5 );
 	}
-}
-function initfirstmove( xsq, ysq ) {
-	if (selpiece == '#sha') { return }
-	board[xsq][ysq] = selpiece;
-	updateedgelists();
-	isfirstmove = false;
+	ctx.strokeStyle = 'black';
+	ctx.lineWidth = 1;
+	ctx.stroke();
 }
 function drawpieces() {
 	for (i = 1; i <= 12; i++) {
@@ -224,23 +223,10 @@ function drawpieces() {
 		}
 	}
 }
-function drawboard() {
-	ctx.clearRect( 0, 0, 600, 600 );
-	ctx.beginPath();
-	for (var i=0; i<13; i++) {
-		ctx.moveTo( i*50 + .5, .5 );
-		ctx.lineTo( i*50 + .5, 600.5 );
-		ctx.moveTo( .5, i*50 + .5 );
-		ctx.lineTo( 600.5, i*50 + .5 );
-	}
-	ctx.strokeStyle = 'black';
-	ctx.lineWidth = 1;
-	ctx.stroke();
-}
 function updatedisplay() {
 	drawboard();
-	if (isfirstmove && (selpiece != '#sha')) { drawfirstmove(); }
-	else { drawpieces(); }
+	drawpieces();
+	showscore();
 }
 function switchselpiece( id ) {
 	$( selpiece ).css( 'border', 'solid 3px white' );
@@ -248,66 +234,80 @@ function switchselpiece( id ) {
 	$( selpiece ).css( 'border', 'solid 3px green' );
 	updatedisplay();
 }
-function showscore( points ) {
-	$( '#output' ).val( 'this move red: ' + points.red + ', blue: ' + points.blu + '\n'
+function showscore() {
+	$( '#output' ).val( 'this move red: ' + thismove.red + ', blue: ' + thismove.blu + '\n'
 		+ 'total red: ' + score.red + ', blue: ' + score.blu );
 }
-function domove( xsq, ysq, points ) {
+function domove( xsq, ysq ) {
 	board[xsq][ysq] = selpiece;
-	score.red += points.red, score.blu += points.blu;
+	score.red += thismove.red;
+	score.blu += thismove.blu;
 	updateedgelists();
-	drawboard();
-	drawpieces();
-	showscore( points );
+	updatedisplay();
 }
 
+function mousemove( e ) {
+	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ),
+		ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
+	thismove = { red: 0, blu: 0 };
+	if 		((selpiece == '#sun') && findonlist( sunedgelist, xsq, ysq )) { findsunpoints( xsq, ysq, thismove ) }
+	else if ((selpiece == '#sha') && findonlist( shaedgelist, xsq, ysq )) { findshapoints( xsq, ysq, thismove ) }
+	else {
+		if 		((selpiece == '#red') && findonlist( edgelist, xsq, ysq )) {
+			present = { red: true, blu: false };
+			findroofpoints( xsq, ysq, thismove, present );
+		}				
+		else if ((selpiece == '#blu') && findonlist( edgelist, xsq, ysq )) {
+			present = { red: false, blu: true };
+			findroofpoints( xsq, ysq, thismove, present );
+		}
+	}
+	updatedisplay();
+	imgdrawat( selpiece, xsq, ysq );
+}
+function click( e ) {
+	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ),
+		ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
+	if (board[xsq][ysq] != 0) { return }
+	if (((selpiece == '#sun') && findonlist( sunedgelist, xsq, ysq ))
+		|| ((selpiece == '#sha') && findonlist( shaedgelist, xsq, ysq ))
+		|| (((selpiece == '#red') || (selpiece == '#blu')) && (findonlist( edgelist, xsq, ysq )))) {
+		domove( xsq, ysq );							
+	}
+}
+function firstmousemove( e ) {
+	drawboard();
+	if (selpiece != '#sha') {
+		for (i = 1; i <= 12; i++) {
+			for (j = 1; j <= 12; j++) {
+				imgdrawat( '#tar', i, j );
+			}
+		}
+	}
+	imgdrawat( selpiece,
+		Math.ceil( (e.pageX - this.offsetLeft)/50 ),
+		Math.ceil( (e.pageY - this.offsetTop)/50 ) );
+}
+function firstclick( e ) {
+	if (selpiece == '#sha') { return }
+	board
+		[Math.ceil( (e.pageX - this.offsetLeft)/50 )]
+		[Math.ceil( (e.pageY - this.offsetTop)/50 )]
+		= selpiece;
+	updateedgelists();
+	$( '#board' ).off( 'mousemove' );
+	$( '#board' ).mousemove( mousemove );
+	$( '#board' ).off( 'click' );
+	$( '#board' ).click( click );
+}
 $( document ).ready( function() {
-	var x = 0, y = 0, xsq = 0, ysq = 0,
-		points = { red: 0, blu: 0 },
-		present = { red: false, blu: false };
 	ctx = document.getElementById( 'board' ).getContext( '2d' );
 	updatedisplay();
 	selpiece = '#sun';
 	$( selpiece ).css( 'border', 'solid 3px green' );
 	$( '#output' ).val( '' );
-
-	$( '#board' ).mousemove( function( e ) {
-		x = e.pageX - this.offsetLeft,	y = e.pageY - this.offsetTop;
-		xsq = Math.ceil( x/50 ),		ysq = Math.ceil( y/50 );
-		updatedisplay();
-		imgdrawat( selpiece, xsq, ysq );
-		if (isfirstmove) {
-			return
-		}
-		points = { red: 0, blu: 0 };
-		if 		((selpiece == '#sun') && findonlist( sunedgelist, xsq, ysq )) { findsunpoints( xsq, ysq, points ) }
-		else if ((selpiece == '#sha') && findonlist( shaedgelist, xsq, ysq )) { findshapoints( xsq, ysq, points ) }
-		else {
-			if 		((selpiece == '#red') && findonlist( edgelist, xsq, ysq )) {
-				present.red = true, present.blu = false;
-				findroofpoints( xsq, ysq, points, present );
-			}				
-			else if ((selpiece == '#blu') && findonlist( edgelist, xsq, ysq )) {
-				present.red = false, present.blu = true;
-				findroofpoints( xsq, ysq, points, present );
-			}
-		}
-		showscore( points );
-	});
-	$( '#board' ).click( function( e ) {
-		x = e.pageX - this.offsetLeft,	y = e.pageY - this.offsetTop;
-		xsq = Math.ceil( x/50 ),		ysq = Math.ceil( y/50 );
-		if (board[xsq][ysq] != 0) { return }
-		if (isfirstmove) {
-			initfirstmove( xsq, ysq );
-			return
-		}
-		if (((selpiece == '#sun') && findonlist( sunedgelist, xsq, ysq ))
-			|| ((selpiece == '#sha') && findonlist( shaedgelist, xsq, ysq ))
-			|| (((selpiece == '#red') || (selpiece == '#blu')) && (findonlist( edgelist, xsq, ysq )))) {
-			domove( xsq, ysq, points );							
-		}
-	});
+	$( '#board' ).mousemove( firstmousemove );
+	$( '#board' ).click( firstclick );
 	$( '#sun' ).click( function() {	switchselpiece( '#sun' ) } );
 	$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
 	$( '#red' ).click( function() {	switchselpiece( '#red' ) } );
