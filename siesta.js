@@ -1,4 +1,4 @@
-var i, j, ctx, isfirstmove = true, selpiece = '#sun',
+var i, j, ctx, selpiece = '#sun',
 	score = { red: 0, blu: 0 }, thismove = { red: 0, blu: 0 },
 	edgelist = [], sunedgelist = [], shaedgelist = [],
 	board = [
@@ -24,6 +24,13 @@ function step( direction, cursor ) {
  	else if (direction == 'w') { cursor.x-- }
  	else if (direction == 's') { cursor.y++ }	
 }
+function reverse( direction ) {
+	if 		(direction == 'n') { return 's' }
+	else if (direction == 'e') { return 'w' }
+	else if (direction == 'w') { return 'e' }
+	else if (direction == 's') { return 'n' }	
+}
+
 // step over any number of roofs, remembering what colors we hit
 function skiproofs( direction, cursor, present ) {
 	while ((board[cursor.x][cursor.y] == '#red') || (board[cursor.x][cursor.y] == '#blu')) {
@@ -41,10 +48,9 @@ function addpointsfrom( pointct, direction, cursor, present, points ) {
 	if (present.blu) { points.blu += pointct }
 }
 
-function shafindsiesta( direction, xsq, ysq, present ) {
-	var cursor = { x:xsq, y: ysq };
-	present.red = present.blu = false;
-
+function shafindsiesta( direction, xsq, ysq, points ) {
+	var cursor = { x: xsq, y: ysq },
+		present = { red: false, blu: false };
 	step( direction, cursor );
 	while (board[cursor.x][cursor.y] == '#sha') {
 		step( direction, cursor );
@@ -54,35 +60,19 @@ function shafindsiesta( direction, xsq, ysq, present ) {
 	}
 	skiproofs( direction, cursor, present );
 	if (board[cursor.x][cursor.y] == '#sun') {
+		direction = reverse( direction );
+		cursor = { x: xsq, y: ysq };
+		step( direction, cursor );
+		addpointsfrom( 1, direction, cursor, present, points );
 		return true
 	}
 	return false
 }
-
 function findshapoints( xsq, ysq, points ) {
-	var present = { red: false, blu: false},
-		cursor = { x: xsq, y: ysq };
-	if (shafindsiesta( 'n', xsq, ysq, present )) {
-		cursor = { x: xsq, y: ysq };
-		step( 's', cursor );
-		addpointsfrom( 1, 's', cursor, present, points );
-	}
-	if (shafindsiesta( 'e', xsq, ysq, present )) {
-		cursor = { x: xsq, y: ysq };
-		step( 'w', cursor );
-		addpointsfrom( 1, 'w', cursor, present, points );
-	}
-	if (shafindsiesta( 'w', xsq, ysq, present )) {
-		cursor = { x: xsq, y: ysq };
-		step( 'e', cursor );
-		addpointsfrom( 1, 'e', cursor, present, points );
-	}
-	if (shafindsiesta( 's', xsq, ysq, present )) {
-		cursor = { x: xsq, y: ysq };
-		step( 'n', cursor );
-		addpointsfrom( 1, 'n', cursor, present, points );
-	}
-	return
+	shafindsiesta( 'n', xsq, ysq, points );
+	shafindsiesta( 'e', xsq, ysq, points );
+	shafindsiesta( 'w', xsq, ysq, points );
+	shafindsiesta( 's', xsq, ysq, points );
 }
 
 function sunfindsiesta( direction, xsq, ysq, points ) {
@@ -92,7 +82,6 @@ function sunfindsiesta( direction, xsq, ysq, points ) {
 	skiproofs( direction, cursor, present );
 	if (board[cursor.x][cursor.y] != '#sha') { return }
 	addpointsfrom( 0, direction, cursor, present, points );
-	return
 }
 function findsunpoints( xsq, ysq, points ) {
 	sunfindsiesta( 'n', xsq, ysq, points );
@@ -107,16 +96,12 @@ function rooffindsiesta( direction, xsq, ysq, present, points ) {
 	step( direction, cursor );
 	skiproofs( direction, cursor, tpres );
 	if (board[cursor.x][cursor.y] != '#sun') { return }
-	if 		(direction == 'n') { direction = 's' }
-	else if (direction == 'e') { direction = 'w' }
-	else if (direction == 'w') { direction = 'e' }
-	else if (direction == 's') { direction = 'n' }
+	direction = reverse( direction );
 	cursor = { x:xsq, y: ysq };
 	step( direction, cursor );
 	skiproofs( direction, cursor, tpres );
 	if (board[cursor.x][cursor.y] != '#sha') { return }
 	addpointsfrom( 0, direction, cursor, tpres, points );
-	return
 }
 function findroofpoints( xsq, ysq, points, present ) {
 	rooffindsiesta( 'n', xsq, ysq, present, points );
@@ -139,7 +124,7 @@ function hasnoadjacent( type, xsq, ysq ) {
 }
 
 function updateedgelists() {
-	var xsq, ysq, present = { red: false, blu: false };
+	var xsq, ysq, points = { red: 0, blu: 0 };
 	// all empty squares adjacent to pieces are on the edgelist
 	edgelist = [];
 	for (i = 1; i <= 12; i++) {
@@ -162,10 +147,10 @@ function updateedgelists() {
 	for (i = 0; i < edgelist.length; i++) {
 		xsq = edgelist[i][0], ysq = edgelist[i][1];
 		if (hasnoadjacent( '#sun', xsq, ysq )
-			&& (shafindsiesta( 'n', xsq, ysq, present )
-				|| shafindsiesta( 'e', xsq, ysq, present )
-				|| shafindsiesta( 'w', xsq, ysq, present )
-				|| shafindsiesta( 's', xsq, ysq, present ))) {
+			&& (shafindsiesta( 'n', xsq, ysq, points )
+				|| shafindsiesta( 'e', xsq, ysq, points )
+				|| shafindsiesta( 'w', xsq, ysq, points )
+				|| shafindsiesta( 's', xsq, ysq, points ))) {
 			shaedgelist.push( [xsq, ysq] );
 		}
 	}
