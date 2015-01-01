@@ -238,14 +238,15 @@ function mousemove( e ) {
 	thismove = { red: 0, blu: 0 };
 	if 		((selpiece == '#sun') && findonlist( sunedgelist, xsq, ysq )) { findsunpoints( xsq, ysq, thismove ) }
 	else if ((selpiece == '#sha') && findonlist( shaedgelist, xsq, ysq )) { findshapoints( xsq, ysq, thismove ) }
-	else {
-		if 		((selpiece == '#red') && findonlist( edgelist, xsq, ysq )) {
+	else if (findonlist( edgelist, xsq, ysq )) {
+		if 		(selpiece == '#red') {
 			present = { red: true, blu: false };
+			findroofpoints( xsq, ysq, thismove, present );
 		}				
-		else if ((selpiece == '#blu') && findonlist( edgelist, xsq, ysq )) {
+		else if (selpiece == '#blu') {
 			present = { red: false, blu: true };
+			findroofpoints( xsq, ysq, thismove, present );
 		}
-		findroofpoints( xsq, ysq, thismove, present );
 	}
 	updatedisplay();
 	imgdrawat( selpiece, xsq, ysq );
