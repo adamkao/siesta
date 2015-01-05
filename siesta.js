@@ -1,4 +1,4 @@
-var i, j, ctx, selpiece = '#sun',
+var ctx, selpiece = '#sun',
 	score = { red: 0, blu: 0 }, thismove = { red: 0, blu: 0 },
 	edgelist = [], sunedgelist = [], shaedgelist = [],
 	board = [
@@ -125,7 +125,7 @@ function hasnoadjacent( type, xsq, ysq ) {
 }
 
 function updateedgelists() {
-	var xsq, ysq, points = { red: 0, blu: 0 };
+	var i, xsq, ysq, points = { red: 0, blu: 0 };
 	// all empty squares adjacent to pieces are on the edgelist
 	edgelist = [];
 	for (i = 1; i <= 12; i++) {
@@ -171,9 +171,10 @@ function imgdrawat( piece, xsq, ysq ) {
 	ctx.drawImage( $( piece )[0], xsq*50 - 45 , ysq*50 - 45 );
 }
 function drawboard() {
+	var i;
 	ctx.clearRect( 0, 0, 600, 600 );
 	ctx.beginPath();
-	for (var i=0; i<13; i++) {
+	for (i=0; i<13; i++) {
 		ctx.moveTo( i*50 + .5, .5 );
 		ctx.lineTo( i*50 + .5, 600.5 );
 		ctx.moveTo( .5, i*50 + .5 );
@@ -184,6 +185,7 @@ function drawboard() {
 	ctx.stroke();
 }
 function drawpieces() {
+	var i, j;
 	for (i = 1; i <= 12; i++) {
 		for (j = 1; j <= 12; j++) {
 			if (board[i][j] != 0) {
