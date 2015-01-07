@@ -17,6 +17,7 @@ var ctx, selpiece = '#sun',
 		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
 		[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
 	];
+function padnum( n )    {return ('  ' + n).slice( -2 )}
 
 function step( direction, cursor ) {
 	if 		(direction == 'n') { cursor.y-- }
@@ -212,9 +213,10 @@ function drawpieces() {
 	}
 }
 function showscore() {
-	$( '#output' ).val( 'this move red: ' + thismove.red + ', blue: ' + thismove.blu + '\n'
-		+ 'total red: ' + score.red + ', blue: ' + score.blu );
+	$( '#redscore' ).html( padnum( score.red ) + '<br>+' + thismove.red );
+	$( '#bluscore' ).html( padnum( score.blu ) + '<br>+' + thismove.blu );
 }
+
 function updatedisplay() {
 	drawboard();
 	drawpieces();

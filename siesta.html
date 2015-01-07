@@ -8,16 +8,22 @@
 	<script type='text/javascript' src='siesta.js'></script>
 </head>
 <body>
-	<p>
+	<table>
+		<tr>
+			<td>
 		<img class='hidden' id='tar' src='target.png'>
 		<img style='border:3px solid white' id='sun' src='sun.png'>
 		<img style='border:3px solid white' id='sha' src='shadow.png'>
-		<img style='border:3px solid white' id='red' src='red.png'>
-		<img style='border:3px solid white' id='blu' src='blue.png'>
+	</td>
+		<td><img style='border:3px solid white' id='red' src='red.png'></td>
+			<td><pre id='redscore'></pre></td>
+		<td><img style='border:3px solid white' id='blu' src='blue.png'></td>
+			<td><pre id='bluscore'></pre></td>
+		</tr>
+	</table>
 	</p>
 	<p>
 		<canvas id='board' width='601' height='601'></canvas>
 	</p>
-	<p><textarea cols='80' rows='12' readonly='readonly' id='output'></textarea></p>
 </body>
 </html>
