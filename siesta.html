@@ -2,28 +2,25 @@
 <meta charset="UTF-8">
 <html>
 <head>
-    <title>siesta</title>
+	<title>siesta</title>
 	<link rel='stylesheet' type='text/css' href='siesta.css' />
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<script type='text/javascript' src='siesta.js'></script>
 </head>
 <body>
+	<canvas id='board' width='601' height='601'></canvas>
 	<table>
 		<tr>
 			<td>
-		<img class='hidden' id='tar' src='target.png'>
-		<img style='border:3px solid white' id='sun' src='sun.png'>
-		<img style='border:3px solid white' id='sha' src='shadow.png'>
-	</td>
-		<td><img style='border:3px solid white' id='red' src='red.png'></td>
+				<img class='hidden' id='tar' src='target.png'>
+				<img style='border:3px solid white' id='sun' src='sun.png'>
+				<img style='border:3px solid white' id='sha' src='shadow.png'>
+			</td>
+			<td><img style='border:3px solid white' id='red' src='red.png'></td>
 			<td><pre id='redscore'></pre></td>
-		<td><img style='border:3px solid white' id='blu' src='blue.png'></td>
+			<td><img style='border:3px solid white' id='blu' src='blue.png'></td>
 			<td><pre id='bluscore'></pre></td>
 		</tr>
 	</table>
-	</p>
-	<p>
-		<canvas id='board' width='601' height='601'></canvas>
-	</p>
 </body>
 </html>
