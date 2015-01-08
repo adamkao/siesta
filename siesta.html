@@ -8,19 +8,17 @@
 	<script type='text/javascript' src='siesta.js'></script>
 </head>
 <body>
-	<canvas id='board' width='601' height='601'></canvas>
-	<table>
-		<tr>
-			<td>
-				<img class='hidden' id='tar' src='target.png'>
-				<img style='border:3px solid white' id='sun' src='sun.png'>
-				<img style='border:3px solid white' id='sha' src='shadow.png'>
-			</td>
-			<td><img style='border:3px solid white' id='red' src='red.png'></td>
-			<td><pre id='redscore'></pre></td>
-			<td><img style='border:3px solid white' id='blu' src='blue.png'></td>
-			<td><pre id='bluscore'></pre></td>
-		</tr>
-	</table>
+	<div style='width:601px; text-align:right'>
+		<canvas id='board' width='601' height='601'></canvas>
+		<p>
+			<img id='tar' src='target.png' hidden>
+			<img style='border:3px solid white' id='sun' src='sun.png'>
+			<img style='border:3px solid white' id='sha' src='shadow.png'>
+			<img style='border:3px solid white' id='red' src='red.png'>
+			<img style='border:3px solid white' id='blu' src='blue.png'>
+			<pre id='score'></pre>
+			<pre id='thismove'></pre>
+		</p>
+	</div>
 </body>
 </html>

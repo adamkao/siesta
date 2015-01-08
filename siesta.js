@@ -204,8 +204,8 @@ function drawpieces() {
 	}
 }
 function showscore() {
-	$( '#redscore' ).html( padnum( s.score.red ) + '<br>+' + s.thismove.red );
-	$( '#bluscore' ).html( padnum( s.score.blu ) + '<br>+' + s.thismove.blu );
+	$( '#score' ).html( padnum( s.score.red ) + '    ' + padnum( s.score.blu ) + '  ' );
+	$( '#thismove' ).html( '+' + s.thismove.red + '    +' + s.thismove.blu + '  ' );
 }
 
 function updatedisplay() {
