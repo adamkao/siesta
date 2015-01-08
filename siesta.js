@@ -297,6 +297,7 @@ $( document ).ready( function() {
 	$( '#output' ).val( '' );
 	$( '#board' ).mousemove( firstmousemove );
 	$( '#board' ).click( firstclick );
+	$( '#board' ).mouseleave( updatedisplay );
 	$( '#sun' ).click( function() {	switchselpiece( '#sun' ) } );
 	$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
 	$( '#red' ).click( function() {	switchselpiece( '#red' ) } );
