@@ -7,6 +7,7 @@ var s = {
 	shaedgelist: [],
 	cursor: { dir: 'n', x: 0, y: 0 },
 	game: {
+		turn: 1,
 		placed: 0,
 		rem: { sun: 25, sha: 75, red: 15, blu: 15 },
 		score: { red: 0, blu: 0 },
@@ -276,7 +277,8 @@ function drawpieces() {
 	}
 }
 function showscore() {
-	$( '#output' ).html( 'Pieces placed: ' + s.game.placed );
+	if (s.game.placed === 3) $( '#output' ).html( '<p>Turn ' + s.game.turn + '</p>3 pieces placed, click done' );
+	else $( '#output' ).html( '<p>Turn ' + s.game.turn + '</p>Pieces placed: ' + s.game.placed );
 	$( '#sunct' ).html( padnum( s.game.rem.sun ) + ' rem ' );
 	$( '#shact' ).html( padnum( s.game.rem.sha ) + ' rem ' );
 	$( '#redct' ).html( padnum( s.game.rem.red ) + ' rem ' + padnum( s.game.score.red ) + ' pts +' + s.thismove.red );
@@ -302,10 +304,19 @@ function domove( xsq, ysq ) {
 	else if (s.selpiece === '#sha') s.game.rem.sha--;
 	else if (s.selpiece === '#red') s.game.rem.red--;
 	else if (s.selpiece === '#blu') s.game.rem.blu--;
-	s.game.placed++;
 	s.game.score.red += s.thismove.red;
 	s.game.score.blu += s.thismove.blu;
-	updateedgelists();
+	s.game.placed++;
+	if (s.game.placed === 3) {
+		$( '#done' ).prop( 'disabled', false );
+		$( '#board' ).off( 'mousemove' );
+		$( '#board' ).off( 'click' );
+		s.edgelist = [];
+		s.sunedgelist = [];
+		s.shaedgelist = [];
+	} else {
+		updateedgelists();		
+	}
 	updatedisplay();
 }
 
@@ -338,7 +349,24 @@ function click( e ) {
 		&& findonlist( s.edgelist, xsq, ysq )) domove( xsq, ysq );
 }
 function undo() {
+	if (!s.gamehistory.length) return;
 	s.game = s.gamehistory.pop();
+	if (s.game.placed === 2) {
+		$( '#done' ).prop( 'disabled', true );
+		$( '#undo' ).prop( 'disabled', false );
+		$( '#board' ).off( 'mousemove' );
+		$( '#board' ).mousemove( mousemove );
+		$( '#board' ).off( 'click' );
+		$( '#board' ).click( click );
+	} else if (s.game.placed === 0) {
+		$( '#undo' ).prop( 'disabled', true );
+		if (s.game.turn === 1) {
+			$( '#board' ).off( 'mousemove' );
+			$( '#board' ).mousemove( firstmousemove );
+			$( '#board' ).off( 'click' );
+			$( '#board' ).click( firstclick );
+		}
+	}
 	updateedgelists();
 	updatedisplay();
 }
@@ -359,17 +387,17 @@ function firstmousemove( e ) {
 }
 function firstclick( e ) {
 	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ), ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
-	if (s.game.board[xsq][ysq] !== 0) return;
-	if      (s.selpiece === '#sun') s.game.rem.sun--;
-	else if (s.selpiece === '#red') s.game.rem.red--;
-	else if (s.selpiece === '#blu') s.game.rem.blu--;
-	else return;
+	if ((s.game.board[xsq][ysq] !== 0) || (s.selpiece === '#sha')) return;
 	s.gamehistory.push( s.game );
 	s.game = $.extend( true, {}, s.game );
 	s.game.board[xsq][ysq] = s.selpiece;
+	if      (s.selpiece === '#sun') s.game.rem.sun--;
+	else if (s.selpiece === '#red') s.game.rem.red--;
+	else if (s.selpiece === '#blu') s.game.rem.blu--;
 	s.game.placed = 1;
 	showscore();
 	updateedgelists();
+	$( '#undo' ).prop( 'disabled', false );
 	$( '#board' ).off( 'mousemove' );
 	$( '#board' ).mousemove( mousemove );
 	$( '#board' ).off( 'click' );
