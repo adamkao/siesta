@@ -1,34 +1,36 @@
 var s = {
 	ctx: 0,
 	selpiece: '#sun',
-	placed: 0,
-	rem: { sun: 25, sha: 75, red: 15, blu: 15 },
-	score: { red: 0, blu: 0 },
 	thismove: { red: 0, blu: 0 },
 	edgelist: [],
 	sunedgelist: [],
 	shaedgelist: [],
 	cursor: { dir: 'n', x: 0, y: 0 },
-	board: ([ [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-		[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ] ]),
-	boardhistory: []
+	game: {
+		placed: 0,
+		rem: { sun: 25, sha: 75, red: 15, blu: 15 },
+		score: { red: 0, blu: 0 },
+		board: ([ [ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
+			[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ] ]),
+	},
+	gamehistory: [],
 };
 
 function padnum( n ) {return ('  ' + n).slice( -2 )}
 function imgdrawat( piece, xsq, ysq ) {s.ctx.drawImage( $( piece )[0], xsq*50 - 45 , ysq*50 - 45 )}
-function at() {return s.board[s.cursor.x][s.cursor.y]}
+function at() {return s.game.board[s.cursor.x][s.cursor.y]}
 
 function step() {
 	if      (s.cursor.dir === 'n') s.cursor.y--;
@@ -185,16 +187,16 @@ function findroofpoints( xsq, ysq, points, present ) {
 }
 
 function haspieceadjacent( xsq, ysq ) {
-	return (((s.board[xsq-1][ysq] !== 0) && (s.board[xsq-1][ysq] !== -1))
-		|| ((s.board[xsq+1][ysq] !== 0) && (s.board[xsq+1][ysq] !== -1))
-		|| ((s.board[xsq][ysq-1] !== 0) && (s.board[xsq][ysq-1] !== -1))
-		|| ((s.board[xsq][ysq+1] !== 0) && (s.board[xsq][ysq+1] !== -1)))
+	return (((s.game.board[xsq-1][ysq] !== 0) && (s.game.board[xsq-1][ysq] !== -1))
+		|| ((s.game.board[xsq+1][ysq] !== 0) && (s.game.board[xsq+1][ysq] !== -1))
+		|| ((s.game.board[xsq][ysq-1] !== 0) && (s.game.board[xsq][ysq-1] !== -1))
+		|| ((s.game.board[xsq][ysq+1] !== 0) && (s.game.board[xsq][ysq+1] !== -1)))
 }
 function hasnoadjacent( type, xsq, ysq ) {
-	return ((s.board[xsq-1][ysq] !== type)
-		&& (s.board[xsq+1][ysq] !== type)
-		&& (s.board[xsq][ysq-1] !== type)
-		&& (s.board[xsq][ysq+1] !== type))
+	return ((s.game.board[xsq-1][ysq] !== type)
+		&& (s.game.board[xsq+1][ysq] !== type)
+		&& (s.game.board[xsq][ysq-1] !== type)
+		&& (s.game.board[xsq][ysq+1] !== type))
 }
 
 function updateedgelists() {
@@ -203,7 +205,7 @@ function updateedgelists() {
 	s.edgelist = [];
 	for (i = 1; i <= 12; i++) {
 		for (j = 1; j <= 12; j++) {
-			if ((s.board[i][j] === 0) && haspieceadjacent( i, j )) {
+			if ((s.game.board[i][j] === 0) && haspieceadjacent( i, j )) {
 				s.edgelist.push( [i, j] );
 			}
 		}
@@ -256,7 +258,7 @@ function drawpieces() {
 	var i, j;
 	for (i = 1; i <= 12; i++) {
 		for (j = 1; j <= 12; j++) {
-			if (s.board[i][j] !== 0) imgdrawat( s.board[i][j], i, j );
+			if (s.game.board[i][j] !== 0) imgdrawat( s.game.board[i][j], i, j );
 		}
 	}
 	if ((s.selpiece === '#sun') && (s.sunedgelist)) {
@@ -274,11 +276,11 @@ function drawpieces() {
 	}
 }
 function showscore() {
-	$( '#output' ).html( 'Pieces placed: ' + s.placed );
-	$( '#sunct' ).html( padnum( s.rem.sun ) + ' rem ' );
-	$( '#shact' ).html( padnum( s.rem.sha ) + ' rem ' );
-	$( '#redct' ).html( padnum( s.rem.red ) + ' rem ' + padnum( s.score.red ) + ' pts +' + s.thismove.red );
-	$( '#bluct' ).html( padnum( s.rem.blu ) + ' rem ' + padnum( s.score.blu ) + ' pts +' + s.thismove.blu );
+	$( '#output' ).html( 'Pieces placed: ' + s.game.placed );
+	$( '#sunct' ).html( padnum( s.game.rem.sun ) + ' rem ' );
+	$( '#shact' ).html( padnum( s.game.rem.sha ) + ' rem ' );
+	$( '#redct' ).html( padnum( s.game.rem.red ) + ' rem ' + padnum( s.game.score.red ) + ' pts +' + s.thismove.red );
+	$( '#bluct' ).html( padnum( s.game.rem.blu ) + ' rem ' + padnum( s.game.score.blu ) + ' pts +' + s.thismove.blu );
 }
 
 function updatedisplay() {
@@ -293,16 +295,16 @@ function switchselpiece( id ) {
 	updatedisplay();
 }
 function domove( xsq, ysq ) {
-	s.boardhistory.push( s.board );
-	s.board = $.extend( true, [], s.board );
-	s.board[xsq][ysq] = s.selpiece;
-	if      (s.selpiece === '#sun') s.rem.sun--;
-	else if (s.selpiece === '#sha') s.rem.sha--;
-	else if (s.selpiece === '#red') s.rem.red--;
-	else if (s.selpiece === '#blu') s.rem.blu--;
-	s.placed++;
-	s.score.red += s.thismove.red;
-	s.score.blu += s.thismove.blu;
+	s.gamehistory.push( s.game );
+	s.game = $.extend( true, {}, s.game );
+	s.game.board[xsq][ysq] = s.selpiece;
+	if      (s.selpiece === '#sun') s.game.rem.sun--;
+	else if (s.selpiece === '#sha') s.game.rem.sha--;
+	else if (s.selpiece === '#red') s.game.rem.red--;
+	else if (s.selpiece === '#blu') s.game.rem.blu--;
+	s.game.placed++;
+	s.game.score.red += s.thismove.red;
+	s.game.score.blu += s.thismove.blu;
 	updateedgelists();
 	updatedisplay();
 }
@@ -329,14 +331,14 @@ function mousemove( e ) {
 }
 function click( e ) {
 	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ), ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
-	if (s.board[xsq][ysq] !== 0) return;
+	if (s.game.board[xsq][ysq] !== 0) return;
 	else if ((s.selpiece === '#sun') && findonlist( s.sunedgelist, xsq, ysq )) domove( xsq, ysq );
 	else if ((s.selpiece === '#sha') && findonlist( s.shaedgelist, xsq, ysq )) domove( xsq, ysq );
 	else if (((s.selpiece === '#red') || (s.selpiece === '#blu'))
 		&& findonlist( s.edgelist, xsq, ysq )) domove( xsq, ysq );
 }
 function undo() {
-	s.board = s.boardhistory.pop();
+	s.game = s.gamehistory.pop();
 	updateedgelists();
 	updatedisplay();
 }
@@ -357,15 +359,15 @@ function firstmousemove( e ) {
 }
 function firstclick( e ) {
 	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ), ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
-	if (s.board[xsq][ysq] !== 0) return;
-	if      (s.selpiece === '#sun') s.rem.sun--;
-	else if (s.selpiece === '#red') s.rem.red--;
-	else if (s.selpiece === '#blu') s.rem.blu--;
+	if (s.game.board[xsq][ysq] !== 0) return;
+	if      (s.selpiece === '#sun') s.game.rem.sun--;
+	else if (s.selpiece === '#red') s.game.rem.red--;
+	else if (s.selpiece === '#blu') s.game.rem.blu--;
 	else return;
-	s.boardhistory.push( s.board );
-	s.board = $.extend( true, [], s.board );
-	s.board[xsq][ysq] = s.selpiece;
-	s.placed = 1;
+	s.gamehistory.push( s.game );
+	s.game = $.extend( true, {}, s.game );
+	s.game.board[xsq][ysq] = s.selpiece;
+	s.game.placed = 1;
 	showscore();
 	updateedgelists();
 	$( '#board' ).off( 'mousemove' );
