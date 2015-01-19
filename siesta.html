@@ -8,17 +8,22 @@
 	<script type='text/javascript' src='siesta.js'></script>
 </head>
 <body>
-	<div style='width:601px; text-align:right'>
+	<div class='block'>
 		<canvas id='board' width='601' height='601'></canvas>
-		<p>
-			<img id='tar' src='target.png' hidden>
-			<img style='border:3px solid white' id='sun' src='sun.png'>
-			<img style='border:3px solid white' id='sha' src='shadow.png'>
-			<img style='border:3px solid white' id='red' src='red.png'>
-			<img style='border:3px solid white' id='blu' src='blue.png'>
-			<pre id='score'></pre>
-			<pre id='thismove'></pre>
-		</p>
+	</div>
+	<div class='block'>
+		<p id='output'>Place the first piece.</p>
+		<img id='tar' src='target.png' hidden>
+		<img style='border:3px solid white' id='sun' src='sun.png'>
+		<pre id='sunct'></pre>
+		<img style='border:3px solid white' id='sha' src='shadow.png'>
+		<pre id='shact'></pre>
+		<img style='border:3px solid white' id='red' src='red.png'>
+		<pre id='redct'></pre>
+		<img style='border:3px solid white' id='blu' src='blue.png'>
+		<pre id='bluct'></pre>
+		<button id='undo' onclick='undo()'>Undo</button>
+		<button id='done' onclick='done()' disabled>Done</button>
 	</div>
 </body>
 </html>
