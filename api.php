@@ -1,19 +1,18 @@
 <?php
 
-function create_game( $DBH )
+function create_game( $DB, $p1, $p2 )
 {
   $dbuser = 'test00';
   $pass = 'test00';
   $DBH = new PDO( 'mysql:host=localhost;dbname=test', $dbuser, $pass );
 
-  $stmt = $DBH->prepare( 'INSERT INTO siesta '
-    . '( $id1 ) '
-    . 'VALUES ( ?);' );
-  if (!$stmt->execute( array( $id1 ) ))
+  $stmt = $DBH->prepare( 'INSERT INTO siestagames (p1, p2) VALUES (?, ?);' );
+  if (!$stmt->execute( array( $p1, $p2 ) ))
   {
-    exit ('INSERT game failed');
+    exit ('INSERT into siestagames failed');
   }
-  exit (json_encode( array() ));
+  $id = $DBH->lastInsertID();
+  exit (json_encode( array( $id ) ));
 }
 
 function get_game( $DBH, $gameid )
