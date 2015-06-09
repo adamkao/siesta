@@ -1,13 +1,13 @@
 <?php
 
-function create_game( $DB, $p1, $p2 )
+function create_game( $DB, $p1, $p2, $p3, $p4 )
 {
   $dbuser = 'test00';
   $pass = 'test00';
   $DBH = new PDO( 'mysql:host=localhost;dbname=test', $dbuser, $pass );
 
-  $stmt = $DBH->prepare( 'INSERT INTO siestagames (p1, p2) VALUES (?, ?);' );
-  if (!$stmt->execute( array( $p1, $p2 ) ))
+  $stmt = $DBH->prepare( 'INSERT INTO siestagames (p1, p2, p3, p4) VALUES (?, ?, ?, ?);' );
+  if (!$stmt->execute( array( $p1, $p2, $p3, $p4 ) ))
   {
     exit ('INSERT into siestagames failed');
   }
@@ -41,11 +41,14 @@ if (isset($_GET['action']) and $_GET['action'] == 'login')
 if (isset($_GET['action']) and $_GET['action'] == 'creategame')
 {
   $player1 = (isset($_GET['pid1'])) ? $_GET['pid1'] : 1;
+  $player2 = (isset($_GET['pid2'])) ? $_GET['pid2'] : 2;
+  $player3 = (isset($_GET['pid3'])) ? $_GET['pid3'] : 0;
+  $player4 = (isset($_GET['pid4'])) ? $_GET['pid4'] : 0;
 
   $dbuser = 'test00';
   $pass = 'test00';
   $DBH = new PDO('mysql:host=localhost;dbname=test', $dbuser, $pass);
-  create_game( $DBH, $player1, $player2, $player3 );
+  create_game( $DBH, $player1, $player2, $player3, $player4 );
 }
 
 if (isset($_GET['action']) and $_GET['action'] == 'getgame')
