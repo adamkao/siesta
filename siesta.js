@@ -296,6 +296,7 @@ function drawpieces() {
 		}
 	}
 	s.ctx.beginPath();
+	
 	i = s.game.compmoves[0][1];
 	j = s.game.compmoves[0][2];
 	s.ctx.moveTo( i*50 + .5, j*50 + .5 );
@@ -317,8 +318,9 @@ function drawpieces() {
 	s.ctx.lineTo( (i - 1)*50 - .5, (j - 1)*50 - .5 );
 	s.ctx.lineTo( (i - 1)*50 - .5, j*50 - .5 );
 	s.ctx.lineTo( i*50 + .5, j*50 + .5 );
+
 	s.ctx.strokeStyle = 'red';
-	s.ctx.lineWidth = 5;
+	s.ctx.lineWidth = 3;
 	s.ctx.stroke();
 
 }
