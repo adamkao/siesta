@@ -144,13 +144,21 @@ function findsunpoints( xsq, ysq, points ) {
 	sunfindsiesta( 'w', xsq, ysq, points );
 	sunfindsiesta( 's', xsq, ysq, points );
 	present = { red: false, blu: false };
-	if (findsundouble( 'n', xsq, ysq, present )) bonuspts( present );
+	if (findsundouble( 'n', xsq, ysq, present )) {
+		bonuspts( present );	
+	}
 	present = { red: false, blu: false };
-	if (findsundouble( 'e', xsq, ysq, present )) bonuspts( present );
+	if (findsundouble( 'e', xsq, ysq, present )) {
+		bonuspts( present );	
+	}
 	present = { red: false, blu: false };
-	if (findsundouble( 'w', xsq, ysq, present )) bonuspts( present );
+	if (findsundouble( 'w', xsq, ysq, present )) {
+		bonuspts( present );	
+	}
 	present = { red: false, blu: false };
-	if (findsundouble( 's', xsq, ysq, present )) bonuspts( present );
+	if (findsundouble( 's', xsq, ysq, present )) {
+		bonuspts( present );	
+	}
 }
 
 function rooffindsiesta( direction, xsq, ysq, present, points ) {
@@ -488,17 +496,18 @@ function firstclick( e ) {
 }
 
 function compmove() {
-	var x1, y1, x2, y2, x3, y3, thispiece = { red: 0, blu: 0 }, thismove = { red: 0, blu: 0 };
+	var x1, y1, x2, y2, x3, y3;
 
 	s.gamehistory.push( s.game );
 	s.game = $.extend( true, {}, s.game );
+	s.game.thismove = { red: 0, blu: 0 };
 
 	x1 = s.sunedgelist[0][0], y1 = s.sunedgelist[0][1];
 	s.game.board[x1][y1] = '#sun';
-	thispiece = { red: 0, blu: 0 };
-	findsunpoints( x1, y1, thispiece );
-	thismove.red += thispiece.red;
-	thismove.blu += thispiece.blu;
+	s.game.thispiece = { red: 0, blu: 0 };
+	findsunpoints( x1, y1, s.game.thispiece );
+	s.game.thismove.red += s.game.thispiece.red;
+	s.game.thismove.blu += s.game.thispiece.blu;
 	s.game.compmoves[0] = [ '#sun', x1, y1 ]
 	updateedgelists();
 	updatedisplay();
@@ -506,26 +515,27 @@ function compmove() {
 	x2 = s.edgelist[0][0], y2 = s.edgelist[0][1];
 	s.game.board[x2][y2] = '#red';
 	present = { red: true, blu: false };
-	thispiece = { red: 0, blu: 0 };
-	findroofpoints( x2, y2, thispiece, present )
-	thismove.red += thispiece.red;
-	thismove.blu += thispiece.blu;
+	s.game.thispiece = { red: 0, blu: 0 };
+	findroofpoints( x2, y2, s.game.thispiece, present )
+	s.game.thismove.red += s.game.thispiece.red;
+	s.game.thismove.blu += s.game.thispiece.blu;
 	s.game.compmoves[1] = [ '#red', x2, y2 ]
 	updateedgelists();
 	updatedisplay();
 
 	x3 = s.shaedgelist[0][0], y3 = s.shaedgelist[0][1];
 	s.game.board[x3][y3] = '#sha';
-	thispiece = { red: 0, blu: 0 };
-	findshapoints( x3, y3, thispiece );
-	thismove.red += thispiece.red;
-	thismove.blu += thispiece.blu;
+	s.game.thispiece = { red: 0, blu: 0 };
+	findshapoints( x3, y3, s.game.thispiece );
+	s.game.thismove.red += s.game.thispiece.red;
+	s.game.thismove.blu += s.game.thispiece.blu;
 	s.game.compmoves[2] = [ '#sha', x3, y3 ]
 	updateedgelists();
 	updatedisplay();
 
-	s.game.score.red += thismove.red;
-	s.game.score.blu += thismove.blu;
+	s.game.score.red += s.game.thismove.red;
+	s.game.score.blu += s.game.thismove.blu;
+	s.game.thismove = { red: 0, blu: 0 };
 }
 
 $( document ).ready( function() {
