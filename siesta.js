@@ -1,12 +1,13 @@
 var s = {
 	ctx: 0,
 	selpiece: '#sun',
-	thismove: { red: 0, blu: 0 },
 	edgelist: [],
 	sunedgelist: [],
 	shaedgelist: [],
 	cursor: { dir: 'n', x: 0, y: 0 },
 	game: {
+		thispiece: { red: 0, blu: 0 },
+		thismove: { red: 0, blu: 0 },
 		moves: ([
 			[ -1, -1, -1 ],
 			[ -1, -1, -1 ],
@@ -30,6 +31,8 @@ var s = {
 			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
 			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
 			[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ] ]),
+	},
+	gamehistory: [],
 };
 
 function padnum( n ) {return ('  ' + n).slice( -2 )}
@@ -49,8 +52,8 @@ function reverse() {
 	else if (s.cursor.dir === 's') s.cursor.dir = 'n';
 }
 function bonuspts( present ) {
-	if      (present.red) s.thismove.red += 2;
-	else if (present.blu) s.thismove.blu += 2;
+	if      (present.red) s.game.thispiece.red += 2;
+	else if (present.blu) s.game.thispiece.blu += 2;
 }
 // step over any number of roofs, remembering what colors we hit
 function skiproofs( present ) {
@@ -281,12 +284,29 @@ function drawpieces() {
 }
 var showxsq = 0, showysq = 0;
 function showscore() {
-	if (s.game.placed === 3) $( '#output' ).html( '<p>Turn ' + s.game.turn + '</p>3 pieces placed, click done' );
-	else $( '#output' ).html( '<p>Turn ' + s.game.turn + '</p>Pieces placed: ' + s.game.placed + 'x: ' + showxsq + 'y: ' + showysq );
+	var outstr, redstr, blustr;
+	outstr = '<p>',
+	redstr = padnum( s.game.rem.red ) + ' rem ' + padnum( s.game.score.red ) + ' pts +';
+	blustr = padnum( s.game.rem.blu ) + ' rem ' + padnum( s.game.score.blu ) + ' pts +';
+	if (s.game.placed < 3) {
+		redstr += (s.game.thismove.red + s.game.thispiece.red);
+		blustr += (s.game.thismove.blu + s.game.thispiece.blu);
+	} else {
+		redstr += s.game.thismove.red;
+		blustr += s.game.thismove.blu;
+		if (s.game.thismove.blu) {
+			outstr += '3 pieces placed, click done</p>';
+		} else {
+			outstr += 'You must score at least one point, click undo</p>';
+		}
+	}
+	outstr += ( '</p><p>Turn ' + s.game.turn + '</p><p>Pieces placed: ' + s.game.placed
+		+ '</p><p> x: ' + showxsq + ' y: ' + showysq + '</p>' );
+	$( '#output' ).html( outstr );
 	$( '#sunct' ).html( padnum( s.game.rem.sun ) + ' rem ' );
 	$( '#shact' ).html( padnum( s.game.rem.sha ) + ' rem ' );
-	$( '#redct' ).html( padnum( s.game.rem.red ) + ' rem ' + padnum( s.game.score.red ) + ' pts +' + s.thismove.red );
-	$( '#bluct' ).html( padnum( s.game.rem.blu ) + ' rem ' + padnum( s.game.score.blu ) + ' pts +' + s.thismove.blu );
+	$( '#redct' ).html( redstr );
+	$( '#bluct' ).html( blustr );
 }
 
 function updatedisplay() {
@@ -303,23 +323,25 @@ function switchselpiece( id ) {
 function domove( xsq, ysq ) {
 	s.gamehistory.push( s.game );
 	s.game = $.extend( true, {}, s.game );
+	s.game.thismove.red += s.game.thispiece.red;
+	s.game.thismove.blu += s.game.thispiece.blu;
 	s.game.moves[s.game.placed] = [ s.selpiece, xsq, ysq ];
 	s.game.board[xsq][ysq] = s.selpiece;
 	if      (s.selpiece === '#sun') s.game.rem.sun--;
 	else if (s.selpiece === '#sha') s.game.rem.sha--;
 	else if (s.selpiece === '#red') s.game.rem.red--;
 	else if (s.selpiece === '#blu') s.game.rem.blu--;
-	s.game.score.red += s.thismove.red;
-	s.game.score.blu += s.thismove.blu;
 	s.game.placed++;
 	$( '#undo' ).prop( 'disabled', false );
 	if (s.game.placed === 3) {
-		$( '#done' ).prop( 'disabled', false );
 		$( '#board' ).off( 'mousemove' );
 		$( '#board' ).off( 'click' );
 		s.edgelist = [];
 		s.sunedgelist = [];
 		s.shaedgelist = [];
+		if (s.game.thismove.blu) {
+			$( '#done' ).prop( 'disabled', false );
+		}
 	} else {
 		updateedgelists();		
 	}
@@ -329,19 +351,19 @@ function domove( xsq, ysq ) {
 function mousemove( e ) {
 	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ), ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
 	showxsq = xsq; showysq = ysq;
-	s.thismove = { red: 0, blu: 0 };
+	s.game.thispiece = { red: 0, blu: 0 };
 	if      ((s.selpiece === '#sun') && findonlist( s.sunedgelist, xsq, ysq )) {
-		findsunpoints( xsq, ysq, s.thismove );		
-	}
-	else if ((s.selpiece === '#sha') && findonlist( s.shaedgelist, xsq, ysq )) findshapoints( xsq, ysq, s.thismove );
-	else if (findonlist( s.edgelist, xsq, ysq )) {
+		findsunpoints( xsq, ysq, s.game.thispiece );		
+	} else if ((s.selpiece === '#sha') && findonlist( s.shaedgelist, xsq, ysq )) {
+		findshapoints( xsq, ysq, s.game.thispiece );
+	} else if (findonlist( s.edgelist, xsq, ysq )) {
 		if      (s.selpiece === '#red') {
 			present = { red: true, blu: false };
-			findroofpoints( xsq, ysq, s.thismove, present );
+			findroofpoints( xsq, ysq, s.game.thispiece, present );
 		}				
 		else if (s.selpiece === '#blu') {
 			present = { red: false, blu: true };
-			findroofpoints( xsq, ysq, s.thismove, present );
+			findroofpoints( xsq, ysq, s.game.thispiece, present );
 		}
 	}
 	updatedisplay();
@@ -350,10 +372,15 @@ function mousemove( e ) {
 function click( e ) {
 	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ), ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
 	if (s.game.board[xsq][ysq] !== 0) return;
-	else if ((s.selpiece === '#sun') && findonlist( s.sunedgelist, xsq, ysq )) domove( xsq, ysq );
-	else if ((s.selpiece === '#sha') && findonlist( s.shaedgelist, xsq, ysq )) domove( xsq, ysq );
-	else if (((s.selpiece === '#red') || (s.selpiece === '#blu'))
-		&& findonlist( s.edgelist, xsq, ysq )) domove( xsq, ysq );
+	else if ((s.selpiece === '#sun') && findonlist( s.sunedgelist, xsq, ysq )) {
+		domove( xsq, ysq );	
+	}
+	else if ((s.selpiece === '#sha') && findonlist( s.shaedgelist, xsq, ysq )) {
+		domove( xsq, ysq );
+	}
+	else if (((s.selpiece === '#red') || (s.selpiece === '#blu')) && findonlist( s.edgelist, xsq, ysq )) {
+		domove( xsq, ysq );
+	}
 }
 function undo() {
 	if (!s.gamehistory.length) return;
@@ -380,6 +407,10 @@ function undo() {
 function done() {
 	s.gamehistory.push( s.game );
 	s.game = $.extend( true, {}, s.game );
+	s.game.score.red += s.game.thismove.red;
+	s.game.score.blu += s.game.thismove.blu;
+	s.game.thismove = { red: 0, blu: 0 };
+	s.game.turn++;
 	s.game.placed = 0;
 	$( '#undo' ).prop( 'disabled', true );
 	$( '#done' ).prop( 'disabled', true );
@@ -430,7 +461,6 @@ $( document ).ready( function() {
 	$( '#board' ).mouseleave( updatedisplay );
 	$( '#sun' ).click( function() {	switchselpiece( '#sun' ) } );
 	$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
-	$( '#red' ).click( function() {	switchselpiece( '#red' ) } );
 	$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
 	updatedisplay();
 });
