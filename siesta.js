@@ -506,41 +506,41 @@ function undocompmove() {
 
 function docompmove() {
 	var i, j, k, x, y;
-	var candidatemove = { scoredelta: -99, piece1: '#sun', edgelist1: 0, piece2: '#red', edgelist2: 0, piece3: '#sha', edgelist3: 0 }
-	var newcandidatemove = { scoredelta: -99, piece1: '#sun', edgelist1: 0, piece2: '#red', edgelist2: 0, piece3: '#sha', edgelist3: 0 }
+	var candidatemove = { scoredelta: -99, piece1: '#red', edgelist1: 0, piece2: '#sun', edgelist2: 0, piece3: '#sha', edgelist3: 0 };
+	var newcandidatemove = { scoredelta: -99, piece1: '#red', edgelist1: 0, piece2: '#sun', edgelist2: 0, piece3: '#sha', edgelist3: 0 };
 
-	for (i = 0; i < s.sunedgelist.length; i++) {
+	for (i = 0; i < s.edgelist.length; i++) {
 		newcandidatemove.edgelist1 = i;
 
 		s.gamehistory.push( s.game );
 		s.game = $.extend( true, {}, s.game );
 		s.game.thismove = { red: 0, blu: 0 };
 
-		x = s.sunedgelist[i][0], y = s.sunedgelist[i][1];
-		s.game.board[x][y] = '#sun';
+		x = s.edgelist[i][0], y = s.edgelist[i][1];
+		s.game.board[x][y] = '#red';
 		present = { red: true, blu: false };
 		s.game.thispiece = { red: 0, blu: 0 };
-		findsunpoints( x, y, s.game.thispiece, present )
+		findroofpoints( x, y, s.game.thispiece, present )
 		s.game.thismove.red += s.game.thispiece.red;
 		s.game.thismove.blu += s.game.thispiece.blu;
-		s.game.compmoves[0] = [ '#sun', x, y ]
+		s.game.compmoves[0] = [ '#red', x, y ]
 
 		updateedgelists();			
 
-		for (j = 0; j < s.edgelist.length; j++) {
+		for (j = 0; j < s.sunedgelist.length; j++) {
 			newcandidatemove.edgelist2 = j;
 
 			s.gamehistory.push( s.game );
 			s.game = $.extend( true, {}, s.game );
 
-			x = s.edgelist[j][0], y = s.edgelist[j][1];
-			s.game.board[x][y] = '#red';
+			x = s.sunedgelist[j][0], y = s.sunedgelist[j][1];
+			s.game.board[x][y] = '#sun';
 			present = { red: true, blu: false };
 			s.game.thispiece = { red: 0, blu: 0 };
-			findroofpoints( x, y, s.game.thispiece, present )
+			findsunpoints( x, y, s.game.thispiece, present )
 			s.game.thismove.red += s.game.thispiece.red;
 			s.game.thismove.blu += s.game.thispiece.blu;
-			s.game.compmoves[1] = [ '#red', x, y ]
+			s.game.compmoves[1] = [ '#sun', x, y ]
 
 			updateedgelists();			
 
@@ -575,21 +575,21 @@ function docompmove() {
 	}
 	s.game.thismove = { red: 0, blu: 0 };
 
-	x = s.sunedgelist[candidatemove.edgelist1][0], y = s.sunedgelist[candidatemove.edgelist1][1];
-	s.game.board[x][y] = '#sun';
+	x = s.edgelist[candidatemove.edgelist1][0], y = s.edgelist[candidatemove.edgelist1][1];
+	s.game.board[x][y] = '#red';
 	present = { red: true, blu: false };
 	s.game.thispiece = { red: 0, blu: 0 };
-	findsunpoints( x, y, s.game.thispiece, present )
+	findroofpoints( x, y, s.game.thispiece, present )
 	s.game.thismove.red += s.game.thispiece.red;
 	s.game.thismove.blu += s.game.thispiece.blu;
 	s.game.compmoves[0] = [ '#sun', x, y ]
 	updateedgelists();			
 
-	x = s.edgelist[candidatemove.edgelist2][0], y = s.edgelist[candidatemove.edgelist2][1];
-	s.game.board[x][y] = '#red';
+	x = s.sunedgelist[candidatemove.edgelist2][0], y = s.sunedgelist[candidatemove.edgelist2][1];
+	s.game.board[x][y] = '#sun';
 	present = { red: true, blu: false };
 	s.game.thispiece = { red: 0, blu: 0 };
-	findroofpoints( x, y, s.game.thispiece, present )
+	findsunpoints( x, y, s.game.thispiece, present )
 	s.game.thismove.red += s.game.thispiece.red;
 	s.game.thismove.blu += s.game.thispiece.blu;
 	s.game.compmoves[1] = [ '#red', x, y ]
