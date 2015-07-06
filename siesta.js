@@ -276,31 +276,43 @@ function findroofdouble( dir, xsq, ysq, present ) {
 	return true
 }
 function findroofpoints( xsq, ysq, points, present ) {
+
 	rooffindsiesta( 'n', xsq, ysq, present, points );
 	rooffindsiesta( 'e', xsq, ysq, present, points );
 	rooffindsiesta( 'w', xsq, ysq, present, points );
 	rooffindsiesta( 's', xsq, ysq, present, points );
+
 	tpres = present;
-	if (findroofdouble( 'n', xsq, ysq, tpres )) bonuspts( tpres );
+	if (findroofdouble( 'n', xsq, ysq, tpres )) {
+		bonuspts( tpres );
+	}
 	tpres = present;
-	if (findroofdouble( 'e', xsq, ysq, tpres )) bonuspts( tpres );
+	if (findroofdouble( 'e', xsq, ysq, tpres )) {
+		bonuspts( tpres );
+	}
 	tpres = present;
-	if (findroofdouble( 'w', xsq, ysq, tpres )) bonuspts( tpres );
+	if (findroofdouble( 'w', xsq, ysq, tpres )) {
+		bonuspts( tpres );
+	}
 	tpres = present;
-	if (findroofdouble( 's', xsq, ysq, tpres )) bonuspts( tpres );
+	if (findroofdouble( 's', xsq, ysq, tpres )) {
+		bonuspts( tpres );
+	}
 }
 
 function haspieceadjacent( xsq, ysq ) {
-	return (((s.game.board[xsq-1][ysq] !== 0) && (s.game.board[xsq-1][ysq] !== -1))
-		|| ((s.game.board[xsq+1][ysq] !== 0) && (s.game.board[xsq+1][ysq] !== -1))
-		|| ((s.game.board[xsq][ysq-1] !== 0) && (s.game.board[xsq][ysq-1] !== -1))
-		|| ((s.game.board[xsq][ysq+1] !== 0) && (s.game.board[xsq][ysq+1] !== -1)))
+	return (
+		((s.game.board[xsq-1][ysq] !== 0) && (s.game.board[xsq-1][ysq] !== -1)) ||
+		((s.game.board[xsq+1][ysq] !== 0) && (s.game.board[xsq+1][ysq] !== -1)) ||
+		((s.game.board[xsq][ysq-1] !== 0) && (s.game.board[xsq][ysq-1] !== -1)) ||
+		((s.game.board[xsq][ysq+1] !== 0) && (s.game.board[xsq][ysq+1] !== -1)))
 }
 function hasnoadjacent( type, xsq, ysq ) {
-	return ((s.game.board[xsq-1][ysq] !== type)
-		&& (s.game.board[xsq+1][ysq] !== type)
-		&& (s.game.board[xsq][ysq-1] !== type)
-		&& (s.game.board[xsq][ysq+1] !== type))
+	return (
+		(s.game.board[xsq-1][ysq] !== type) &&
+		(s.game.board[xsq+1][ysq] !== type) &&
+		(s.game.board[xsq][ysq-1] !== type) &&
+		(s.game.board[xsq][ysq+1] !== type))
 }
 
 function updateedgelists() {
