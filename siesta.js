@@ -220,6 +220,7 @@ function hasnoadjacent( type, xsq, ysq ) {
 
 function updateedgelists() {
 	var i, xsq, ysq, points = { red: 0, blu: 0 };
+
 	// all empty squares adjacent to pieces are on the edgelist
 	s.edgelist = [];
 	for (i = 1; i <= 12; i++) {
@@ -241,14 +242,15 @@ function updateedgelists() {
 	s.shaedgelist = [];
 	for (i = 0; i < s.edgelist.length; i++) {
 		xsq = s.edgelist[i][0]; ysq = s.edgelist[i][1];
-		if (hasnoadjacent( '#sun', xsq, ysq )
-			&& (shafindsiesta( 'n', xsq, ysq, points )
-				|| shafindsiesta( 'e', xsq, ysq, points )
-				|| shafindsiesta( 'w', xsq, ysq, points )
-				|| shafindsiesta( 's', xsq, ysq, points ))) {
-			s.shaedgelist.push( [xsq, ysq] );
+		if (hasnoadjacent( '#sun', xsq, ysq )) {
+			if (shafindsiesta( 'n', xsq, ysq, points ) ||
+				shafindsiesta( 'e', xsq, ysq, points ) ||
+				shafindsiesta( 'w', xsq, ysq, points ) ||
+				shafindsiesta( 's', xsq, ysq, points )) {
+				s.shaedgelist.push( [xsq, ysq] );
+			}
+		}
 	}
-}
 }
 function findonlist( list, xsq, ysq ) {
 	if (list) {
@@ -295,9 +297,9 @@ function drawpieces() {
 			imgdrawat( '#tar', s.edgelist[i][0], s.edgelist[i][1] )
 		}
 	}
-	
+
 	s.ctx.beginPath();
-	
+
 	i = s.game.compmoves[0][1];
 	j = s.game.compmoves[0][2];
 	s.ctx.moveTo( i*50 + .5, j*50 + .5 );
@@ -325,12 +327,11 @@ function drawpieces() {
 	s.ctx.stroke();
 
 }
-var showxsq = 0, showysq = 0;
 function showscore() {
-	var outstr, redstr, blustr;
-	outstr = '<p>',
-	redstr = padnum( s.game.rem.red ) + ' rem ' + padnum( s.game.score.red ) + ' pts +';
-	blustr = padnum( s.game.rem.blu ) + ' rem ' + padnum( s.game.score.blu ) + ' pts +';
+	var outstr = '';
+	var redstr = padnum( s.game.rem.red ) + ' rem ' + padnum( s.game.score.red ) + ' pts +';
+	var blustr = padnum( s.game.rem.blu ) + ' rem ' + padnum( s.game.score.blu ) + ' pts +';
+
 	if (s.game.placed < 3) {
 		redstr += (s.game.thismove.red + s.game.thispiece.red);
 		blustr += (s.game.thismove.blu + s.game.thispiece.blu);
@@ -338,13 +339,30 @@ function showscore() {
 		redstr += s.game.thismove.red;
 		blustr += s.game.thismove.blu;
 		if (s.game.thismove.blu) {
-			outstr += '3 pieces placed, click done</p>';
+			outstr = '<p>3 pieces placed, click done</p>';
 		} else {
-			outstr += 'You must score at least one point, click undo</p>';
+			outstr = '<p>You must score at least one point, click undo</p>';
 		}
 	}
-	outstr += ( '</p><p>Turn ' + s.game.turn + '</p><p>Pieces placed: ' + s.game.placed
-		+ '</p><p> x: ' + showxsq + ' y: ' + showysq + '</p>' );
+	if (s.game.turn === 1) {
+		if (s.game.placed === 0) {
+			outstr += '<p>Place the first sun</p>'
+			$( s.selpiece ).css( 'border', 'solid 3px white' );
+			s.selpiece = '#sun';
+			$( s.selpiece ).css( 'border', 'solid 3px green' );
+		} else if (s.game.placed === 1) {
+			outstr += '<p>Place the first roof</p>'
+			$( s.selpiece ).css( 'border', 'solid 3px white' );
+			s.selpiece = '#blu';
+			$( s.selpiece ).css( 'border', 'solid 3px green' );
+		} else if (s.game.placed === 2) {
+			outstr += '<p>Place the first shadow</p>'
+			$( s.selpiece ).css( 'border', 'solid 3px white' );
+			s.selpiece = '#sha';
+			$( s.selpiece ).css( 'border', 'solid 3px green' );
+		}
+	}
+	outstr += ( '<p>Turn ' + s.game.turn + '</p><p>Pieces placed: ' + s.game.placed + '</p>' );
 	$( '#output' ).html( outstr );
 	$( '#sunct' ).html( padnum( s.game.rem.sun ) + ' rem ' );
 	$( '#shact' ).html( padnum( s.game.rem.sha ) + ' rem ' );
@@ -353,6 +371,22 @@ function showscore() {
 }
 
 function updatedisplay() {
+	$( '#sun' ).off( 'click' );
+	if ((s.game.rem.sun === 0) && (s.selpiece === '#sun')) {
+		$( s.selpiece ).css( 'border', 'solid 3px white' );
+		s.selpiece = '#sha';
+		$( s.selpiece ).css( 'border', 'solid 3px green' );
+	} else {
+		$( '#sun' ).click( function() {	switchselpiece( '#sun' ) } );
+	}
+	$( '#blu' ).off( 'click' );
+	if ((s.game.rem.blu === 0) && (s.selpiece === '#blu')) {
+		$( s.selpiece ).css( 'border', 'solid 3px white' );
+		s.selpiece = '#sha';
+		$( s.selpiece ).css( 'border', 'solid 3px green' );
+	} else {
+		$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
+	}
 	drawboard();
 	drawpieces();
 	showscore();
@@ -370,10 +404,18 @@ function domove( xsq, ysq ) {
 	s.game.thismove.blu += s.game.thispiece.blu;
 	s.game.usermoves[s.game.placed] = [ s.selpiece, xsq, ysq ];
 	s.game.board[xsq][ysq] = s.selpiece;
-	if      (s.selpiece === '#sun') s.game.rem.sun--;
-	else if (s.selpiece === '#sha') s.game.rem.sha--;
-	else if (s.selpiece === '#red') s.game.rem.red--;
-	else if (s.selpiece === '#blu') s.game.rem.blu--;
+	if      (s.selpiece === '#sun') {
+		s.game.rem.sun--;
+	}
+	else if (s.selpiece === '#sha') {
+		s.game.rem.sha--;
+	}
+	else if (s.selpiece === '#red') {
+		s.game.rem.red--;
+	}
+	else if (s.selpiece === '#blu') {
+		s.game.rem.blu--;
+	}
 	s.game.placed++;
 	$( '#undo' ).prop( 'disabled', false );
 	if (s.game.placed === 3) {
@@ -459,6 +501,9 @@ function done() {
 	$( '#done' ).prop( 'disabled', true );
 	$( '#board' ).mousemove( mousemove );
 	$( '#board' ).click( click );
+	$( '#sun' ).click( function() {	switchselpiece( '#sun' ) } );
+	$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
+	$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
 	updateedgelists();
 	compmove();
 	updateedgelists();
@@ -610,6 +655,9 @@ function docompmove() {
 	s.game.score.blu += s.game.thismove.blu;
 	s.game.thispiece = { red: 0, blu: 0 };
 	s.game.thismove = { red: 0, blu: 0 };
+	s.game.rem.sun--;
+	s.game.rem.red--;
+	s.game.rem.sha--;
 }
 
 function compmove() {
@@ -623,8 +671,5 @@ $( document ).ready( function() {
 	$( '#board' ).mousemove( firstmousemove );
 	$( '#board' ).click( firstclick );
 	$( '#board' ).mouseleave( updatedisplay );
-	$( '#sun' ).click( function() {	switchselpiece( '#sun' ) } );
-	$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
-	$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
 	updatedisplay();
 });
