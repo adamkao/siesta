@@ -39,9 +39,15 @@ var s = {
 	gamehistory: [],
 };
 
-function padnum( n ) {return ('  ' + n).slice( -2 )}
-function imgdrawat( piece, xsq, ysq ) {s.ctx.drawImage( $( piece )[0], xsq*50 - 45 , ysq*50 - 45 )}
-function at() {return s.game.board[s.cursor.x][s.cursor.y]}
+function padnum( n ) {
+	return ('  ' + n).slice( -2 )
+}
+function imgdrawat( piece, xsq, ysq ){
+	s.ctx.drawImage( $( piece )[0], xsq*50 - 45 , ysq*50 - 45 )
+}
+function at() {
+	return s.game.board[s.cursor.x][s.cursor.y]
+}
 
 function step() {
 	if      (s.cursor.dir === 'n') s.cursor.y--;
@@ -79,10 +85,18 @@ function addpointsfrom( pointct, present, points ) {
 
 function shafindsiesta( direction, xsq, ysq, points ) {
 	var present = { red: false, blu: false };
+
 	s.cursor = { dir: direction, x: xsq, y: ysq };
-	do step(); while (at() === '#sha');
-	if ((at() !== '#red') && (at() !== '#blu')) return false;
+
+	do step();
+	while (at() === '#sha');
+	
+	if ((at() !== '#red') && (at() !== '#blu')) {
+		return false
+	}
+
 	skiproofs( present );
+
 	if (at() === '#sun') {
 		s.cursor = { dir: direction, x: xsq, y: ysq };
 		reverse();
@@ -94,55 +108,100 @@ function shafindsiesta( direction, xsq, ysq, points ) {
 }
 function findshadouble( dir, xsq, ysq, present ) {
 	s.cursor = { dir: dir, x: xsq, y: ysq };
-	do step(); while (at() === '#sha');
-	if ((at() !== '#red') && (at() !== '#blu')) return false;
+
+	do step();
+	while (at() === '#sha');
+
+	if ((at() !== '#red') && (at() !== '#blu')) {
+		return false
+	}
+
 	skiproofs( present );
-	if ((present.red && present.blu) || (at() !== '#sun')) return false;
+
+	if ((present.red && present.blu) || (at() !== '#sun')) {
+		return false
+	}
+
 	s.cursor = { dir: dir, x: xsq, y: ysq };
 	reverse();
-	do step(); while (at() === '#sha');
-	if ((at() !== '#red') && (at() !== '#blu')) return false;
+
+	do step();
+	while (at() === '#sha');
+
+	if ((at() !== '#red') && (at() !== '#blu')) {
+		return false
+	}
+
 	skiproofs( present );
-	if ((present.red && present.blu) || (at() !== '#sun')) return false;
+
+	if ((present.red && present.blu) || (at() !== '#sun')) {
+		return false
+	}
+
 	return true
 }
 function findshapoints( xsq, ysq, points ) {
 	var present = {};
+
 	shafindsiesta( 'n', xsq, ysq, points );
 	shafindsiesta( 'e', xsq, ysq, points );
 	shafindsiesta( 'w', xsq, ysq, points );
 	shafindsiesta( 's', xsq, ysq, points );
+
 	present = { red: false, blu: false };
-	if (findshadouble( 'n', xsq, ysq, present )) bonuspts( present );
+	if (findshadouble( 'n', xsq, ysq, present )) {
+		bonuspts( present );
+	}
 	present = { red: false, blu: false };
-	if (findshadouble( 'e', xsq, ysq, present )) bonuspts( present );
+	if (findshadouble( 'e', xsq, ysq, present )) {
+		bonuspts( present );
+	}
 }
 
 function sunfindsiesta( direction, xsq, ysq, points ) {
 	var present = { red: false, blu: false };
+
 	s.cursor = { dir: direction, x: xsq, y: ysq };
+
 	step();
 	skiproofs( present );
-	if (at() !== '#sha') return;
+
+	if (at() !== '#sha') {
+		return
+	}
+
 	addpointsfrom( 0, present, points );
 }
 function findsundouble( dir, xsq, ysq, present ) {
 	var points = { red:0, blu: 0 };
+
 	s.cursor = { dir: dir, x: xsq, y: ysq };
+
 	step();
 	skiproofs( present );
-	if ((present.red && present.blu) || (at() !== '#sha')) return false;
+
+	if ((present.red && present.blu) || (at() !== '#sha')) {
+		return false
+	}
+
 	addpointsfrom( 0, present, points );
+
 	skiproofs( present );
-	if ((present.red && present.blu) || (at() !== '#sun')) return false;
+
+	if ((present.red && present.blu) || (at() !== '#sun')) {
+		return false
+	}
+
 	return true
 }
 function findsunpoints( xsq, ysq, points ) {
 	var present = {};
+
 	sunfindsiesta( 'n', xsq, ysq, points );
 	sunfindsiesta( 'e', xsq, ysq, points );
 	sunfindsiesta( 'w', xsq, ysq, points );
 	sunfindsiesta( 's', xsq, ysq, points );
+
 	present = { red: false, blu: false };
 	if (findsundouble( 'n', xsq, ysq, present )) {
 		bonuspts( present );	
@@ -164,30 +223,56 @@ function findsunpoints( xsq, ysq, points ) {
 function rooffindsiesta( direction, xsq, ysq, present, points ) {
 	s.cursor = { dir: direction, x: xsq, y: ysq };
 	tpres = present;
+
 	step();
 	skiproofs( tpres );
-	if (at() !== '#sun') return;
+
+	if (at() !== '#sun') {
+		return
+	}
+
 	s.cursor = { dir: direction, x: xsq, y: ysq };
 	reverse();
+
 	step();
 	skiproofs( tpres );
-	if (at() !== '#sha') return;
+
+	if (at() !== '#sha') {
+		return
+	}
+
 	addpointsfrom( 0, tpres, points );
 }
 function findroofdouble( dir, xsq, ysq, present ) {
 	var points = { red:0, blu: 0 };
+
 	s.cursor = { dir: dir, x: xsq, y: ysq };
+
 	step();
 	skiproofs( present );
-	if ((present.red && present.blu) || (at() !== '#sun')) return false;
+
+	if ((present.red && present.blu) || (at() !== '#sun')) {
+		return false
+	}
+
 	s.cursor = { dir: dir, x: xsq, y: ysq };
 	reverse();
+
 	step();
 	skiproofs( present );
-	if ((present.red && present.blu) || (at() !== '#sha')) return false;
+
+	if ((present.red && present.blu) || (at() !== '#sha')) {
+		return false
+	}
+
 	addpointsfrom( 0, present, points );
+
 	skiproofs( present );
-	if ((present.red && present.blu) || (at() !== '#sun')) return false;
+
+	if ((present.red && present.blu) || (at() !== '#sun')) {
+		return false
+	}
+
 	return true
 }
 function findroofpoints( xsq, ysq, points, present ) {
@@ -525,7 +610,7 @@ function done() {
 	$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
 	$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
 	updateedgelists();
-	if (compmove()) {
+	if (docompmove()) {
 		updateedgelists();
 		updatedisplay();	
 	} else {
@@ -700,10 +785,6 @@ function docompmove() {
 		return false;
 	}
 	return true;
-}
-
-function compmove() {
-	return docompmove();
 }
 
 $( document ).ready( function() {
