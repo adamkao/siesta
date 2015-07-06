@@ -490,10 +490,30 @@ function undo() {
 	updatedisplay();
 }
 function done() {
+	var outstr;
 	s.gamehistory.push( s.game );
 	s.game = $.extend( true, {}, s.game );
 	s.game.score.red += s.game.thismove.red;
 	s.game.score.blu += s.game.thismove.blu;
+	if ((s.game.rem.sun === 0) || (s.game.rem.sha === 0) || (s.game.rem.blu === 0)) {
+		$( '#undo' ).prop( 'disabled', true );
+		$( '#done' ).prop( 'disabled', true );
+		$( '#board' ).off( 'click' );
+		$( '#board' ).off( 'mousemove' );
+		$( '#board' ).off( 'mouseleave' );
+		if (s.game.score.blu > s.game.score.red) {
+			$( '#output' ).html( '<h3>You win!</h3>' );
+		} else if (s.game.score.blu < s.game.score.red) {
+			$( '#output' ).html( '<h3>Computer wins!</h3>' );
+
+		} else {
+			$( '#output' ).html( '<h3>Tie game!</h3>' );
+		}
+		$( '#sun' ).off( 'click' );
+		$( '#sha' ).off( 'click' );
+		$( '#blu' ).off( 'click' );
+		return;
+	}
 	s.game.thismove = { red: 0, blu: 0 };
 	s.game.turn++;
 	s.game.placed = 0;
@@ -505,9 +525,22 @@ function done() {
 	$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
 	$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
 	updateedgelists();
-	compmove();
-	updateedgelists();
-	updatedisplay();
+	if (compmove()) {
+		updateedgelists();
+		updatedisplay();	
+	} else {
+		updatedisplay();	
+		if (s.game.score.blu > s.game.score.red) {
+			$( '#output' ).html( '<h3>You win!</h3>' );
+		} else if (s.game.score.blu < s.game.score.red) {
+			$( '#output' ).html( '<h3>Computer wins!</h3>' );
+		} else {
+			$( '#output' ).html( '<h3>Tie game!</h3>' );
+		}
+		$( '#sun' ).off( 'click' );
+		$( '#sha' ).off( 'click' );
+		$( '#blu' ).off( 'click' );
+	}
 }
 
 function firstmousemove( e ) {
@@ -658,10 +691,19 @@ function docompmove() {
 	s.game.rem.sun--;
 	s.game.rem.red--;
 	s.game.rem.sha--;
+	if ((s.game.rem.sun === 0) || (s.game.rem.sha === 0) || (s.game.rem.red === 0)) {
+		$( '#undo' ).prop( 'disabled', true );
+		$( '#done' ).prop( 'disabled', true );
+		$( '#board' ).off( 'click' );
+		$( '#board' ).off( 'mousemove' );
+		$( '#board' ).off( 'mouseleave' );
+		return false;
+	}
+	return true;
 }
 
 function compmove() {
-	docompmove();
+	return docompmove();
 }
 
 $( document ).ready( function() {
