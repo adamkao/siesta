@@ -21,20 +21,21 @@ var s = {
 		rem: { sun: 25, sha: 75, red: 15, blu: 15 },
 		score: { red: 0, blu: 0 },
 		board: ([
-			[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 ],
-			[ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ] ]),
+			[ '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-' ],
+			]),
 	},
 	gamehistory: [],
 };
@@ -67,15 +68,15 @@ function bonuspts( present ) {
 }
 // step over any number of roofs, remembering what colors we hit
 function skiproofs( present ) {
-	while ((at() === '#red') || (at() === '#blu')) {
-		if      (at() === '#red') present.red = true;
-		else if (at() === '#blu') present.blu = true;
+	while ((at() === 'r') || (at() === 'b')) {
+		if      (at() === 'r') present.red = true;
+		else if (at() === 'b') present.blu = true;
 		step();
 	}
 }
 // count and score shadows adding points to the colors present
 function addpointsfrom( pointct, present, points ) {
-	while (at() === '#sha') {
+	while (at() === 'h') {
 		pointct++;
 		step();
 	}
@@ -89,15 +90,15 @@ function shafindsiesta( direction, xsq, ysq, points ) {
 	s.cursor = { dir: direction, x: xsq, y: ysq };
 
 	do step();
-	while (at() === '#sha');
+	while (at() === 'h');
 	
-	if ((at() !== '#red') && (at() !== '#blu')) {
+	if ((at() !== 'r') && (at() !== 'b')) {
 		return false
 	}
 
 	skiproofs( present );
 
-	if (at() === '#sun') {
+	if (at() === 'u') {
 		s.cursor = { dir: direction, x: xsq, y: ysq };
 		reverse();
 		step();
@@ -110,15 +111,15 @@ function findshadouble( dir, xsq, ysq, present ) {
 	s.cursor = { dir: dir, x: xsq, y: ysq };
 
 	do step();
-	while (at() === '#sha');
+	while (at() === 'h');
 
-	if ((at() !== '#red') && (at() !== '#blu')) {
+	if ((at() !== 'r') && (at() !== 'b')) {
 		return false
 	}
 
 	skiproofs( present );
 
-	if ((present.red && present.blu) || (at() !== '#sun')) {
+	if ((present.red && present.blu) || (at() !== 'u')) {
 		return false
 	}
 
@@ -126,15 +127,15 @@ function findshadouble( dir, xsq, ysq, present ) {
 	reverse();
 
 	do step();
-	while (at() === '#sha');
+	while (at() === 'h');
 
-	if ((at() !== '#red') && (at() !== '#blu')) {
+	if ((at() !== 'r') && (at() !== 'b')) {
 		return false
 	}
 
 	skiproofs( present );
 
-	if ((present.red && present.blu) || (at() !== '#sun')) {
+	if ((present.red && present.blu) || (at() !== 'u')) {
 		return false
 	}
 
@@ -166,7 +167,7 @@ function sunfindsiesta( direction, xsq, ysq, points ) {
 	step();
 	skiproofs( present );
 
-	if (at() !== '#sha') {
+	if (at() !== 'h') {
 		return
 	}
 
@@ -180,7 +181,7 @@ function findsundouble( dir, xsq, ysq, present ) {
 	step();
 	skiproofs( present );
 
-	if ((present.red && present.blu) || (at() !== '#sha')) {
+	if ((present.red && present.blu) || (at() !== 'h')) {
 		return false
 	}
 
@@ -188,7 +189,7 @@ function findsundouble( dir, xsq, ysq, present ) {
 
 	skiproofs( present );
 
-	if ((present.red && present.blu) || (at() !== '#sun')) {
+	if ((present.red && present.blu) || (at() !== 'u')) {
 		return false
 	}
 
@@ -227,7 +228,7 @@ function rooffindsiesta( direction, xsq, ysq, present, points ) {
 	step();
 	skiproofs( tpres );
 
-	if (at() !== '#sun') {
+	if (at() !== 'u') {
 		return
 	}
 
@@ -237,7 +238,7 @@ function rooffindsiesta( direction, xsq, ysq, present, points ) {
 	step();
 	skiproofs( tpres );
 
-	if (at() !== '#sha') {
+	if (at() !== 'h') {
 		return
 	}
 
@@ -251,7 +252,7 @@ function findroofdouble( dir, xsq, ysq, present ) {
 	step();
 	skiproofs( present );
 
-	if ((present.red && present.blu) || (at() !== '#sun')) {
+	if ((present.red && present.blu) || (at() !== 'u')) {
 		return false
 	}
 
@@ -261,7 +262,7 @@ function findroofdouble( dir, xsq, ysq, present ) {
 	step();
 	skiproofs( present );
 
-	if ((present.red && present.blu) || (at() !== '#sha')) {
+	if ((present.red && present.blu) || (at() !== 'h')) {
 		return false
 	}
 
@@ -269,7 +270,7 @@ function findroofdouble( dir, xsq, ysq, present ) {
 
 	skiproofs( present );
 
-	if ((present.red && present.blu) || (at() !== '#sun')) {
+	if ((present.red && present.blu) || (at() !== 'u')) {
 		return false
 	}
 
@@ -301,18 +302,24 @@ function findroofpoints( xsq, ysq, points, present ) {
 }
 
 function haspieceadjacent( xsq, ysq ) {
+	var np = s.game.board[xsq][ysq-1];
+	var ep = s.game.board[xsq-1][ysq];
+	var wp = s.game.board[xsq+1][ysq];
+	var sp = s.game.board[xsq][ysq+1];
 	return (
-		((s.game.board[xsq-1][ysq] !== 0) && (s.game.board[xsq-1][ysq] !== -1)) ||
-		((s.game.board[xsq+1][ysq] !== 0) && (s.game.board[xsq+1][ysq] !== -1)) ||
-		((s.game.board[xsq][ysq-1] !== 0) && (s.game.board[xsq][ysq-1] !== -1)) ||
-		((s.game.board[xsq][ysq+1] !== 0) && (s.game.board[xsq][ysq+1] !== -1)))
+		((np !== ' ') && (np !== '-') && (np !== '+')) ||
+		((ep !== ' ') && (ep !== '-') && (np !== '+')) ||
+		((wp !== ' ') && (wp !== '-') && (np !== '+')) ||
+		((sp !== ' ') && (sp !== '-') && (np !== '+')) 
+		)
 }
 function hasnoadjacent( type, xsq, ysq ) {
 	return (
 		(s.game.board[xsq-1][ysq] !== type) &&
 		(s.game.board[xsq+1][ysq] !== type) &&
 		(s.game.board[xsq][ysq-1] !== type) &&
-		(s.game.board[xsq][ysq+1] !== type))
+		(s.game.board[xsq][ysq+1] !== type)
+		)
 }
 
 function updateedgelists() {
@@ -322,7 +329,7 @@ function updateedgelists() {
 	s.edgelist = [];
 	for (i = 1; i <= 12; i++) {
 		for (j = 1; j <= 12; j++) {
-			if ((s.game.board[i][j] === 0) && haspieceadjacent( i, j )) {
+			if ((s.game.board[i][j] === ' ') && haspieceadjacent( i, j )) {
 				s.edgelist.push( [i, j] );
 			}
 		}
@@ -331,7 +338,7 @@ function updateedgelists() {
 	s.sunedgelist = [];
 	for (i = 0; i < s.edgelist.length; i++) {
 		xsq = s.edgelist[i][0]; ysq = s.edgelist[i][1];
-		if (hasnoadjacent( '#sha', xsq, ysq )) {
+		if (hasnoadjacent( 'h', xsq, ysq )) {
 			s.sunedgelist.push( [xsq, ysq] );			
 		}
 	}
@@ -339,7 +346,7 @@ function updateedgelists() {
 	s.shaedgelist = [];
 	for (i = 0; i < s.edgelist.length; i++) {
 		xsq = s.edgelist[i][0]; ysq = s.edgelist[i][1];
-		if (hasnoadjacent( '#sun', xsq, ysq )) {
+		if (hasnoadjacent( 'u', xsq, ysq )) {
 			if (shafindsiesta( 'n', xsq, ysq, points ) ||
 				shafindsiesta( 'e', xsq, ysq, points ) ||
 				shafindsiesta( 'w', xsq, ysq, points ) ||
@@ -373,11 +380,18 @@ function drawboard() {
 	s.ctx.stroke();
 }
 function drawpieces() {
-	var i, j;
+	var i, j, p;
 	for (i = 1; i <= 12; i++) {
 		for (j = 1; j <= 12; j++) {
-			if (s.game.board[i][j] !== 0) {
-				imgdrawat( s.game.board[i][j], i, j );
+			p = s.game.board[i][j];
+			if (p === 'r') {
+				imgdrawat( '#red', i, j );
+			} else if (p === 'b') {
+				imgdrawat( '#blu', i, j );
+			} else if (p === 'u') {
+				imgdrawat( '#sun', i, j );
+			} else if (p === 'h') {
+				imgdrawat( '#sha', i, j );
 			}
 		}
 	}
@@ -500,18 +514,21 @@ function domove( xsq, ysq ) {
 	s.game.thismove.red += s.game.thispiece.red;
 	s.game.thismove.blu += s.game.thispiece.blu;
 	s.game.usermoves[s.game.placed] = [ s.selpiece, xsq, ysq ];
-	s.game.board[xsq][ysq] = s.selpiece;
 	if      (s.selpiece === '#sun') {
 		s.game.rem.sun--;
+		s.game.board[xsq][ysq] = 'u';
 	}
 	else if (s.selpiece === '#sha') {
 		s.game.rem.sha--;
+		s.game.board[xsq][ysq] = 'h';
 	}
 	else if (s.selpiece === '#red') {
 		s.game.rem.red--;
+		s.game.board[xsq][ysq] = 'r';
 	}
 	else if (s.selpiece === '#blu') {
 		s.game.rem.blu--;
+		s.game.board[xsq][ysq] = 'b';
 	}
 	s.game.placed++;
 	$( '#undo' ).prop( 'disabled', false );
@@ -553,7 +570,7 @@ function mousemove( e ) {
 }
 function click( e ) {
 	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ), ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
-	if (s.game.board[xsq][ysq] !== 0) return;
+	if (s.game.board[xsq][ysq] !== ' ') return;
 	else if ((s.selpiece === '#sun') && findonlist( s.sunedgelist, xsq, ysq )) {
 		domove( xsq, ysq );	
 	}
@@ -592,12 +609,14 @@ function done() {
 	s.game = $.extend( true, {}, s.game );
 	s.game.score.red += s.game.thismove.red;
 	s.game.score.blu += s.game.thismove.blu;
+	s.game.thismove = { red: 0, blu: 0 };
 	if ((s.game.rem.sun === 0) || (s.game.rem.sha === 0) || (s.game.rem.blu === 0)) {
 		$( '#undo' ).prop( 'disabled', true );
 		$( '#done' ).prop( 'disabled', true );
 		$( '#board' ).off( 'click' );
 		$( '#board' ).off( 'mousemove' );
 		$( '#board' ).off( 'mouseleave' );
+		updatedisplay();
 		if (s.game.score.blu > s.game.score.red) {
 			$( '#output' ).html( '<h3>You win!</h3>' );
 		} else if (s.game.score.blu < s.game.score.red) {
@@ -611,7 +630,6 @@ function done() {
 		$( '#blu' ).off( 'click' );
 		return;
 	}
-	s.game.thismove = { red: 0, blu: 0 };
 	s.game.turn++;
 	s.game.placed = 0;
 	$( '#undo' ).prop( 'disabled', true );
@@ -656,10 +674,10 @@ function firstmousemove( e ) {
 }
 function firstclick( e ) {
 	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ), ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
-	if ((s.game.board[xsq][ysq] !== 0) || (s.selpiece === '#sha')) return;
+	if ((s.game.board[xsq][ysq] !== ' ') || (s.selpiece === '#sha')) return;
 	s.gamehistory.push( s.game );
 	s.game = $.extend( true, {}, s.game );
-	s.game.board[xsq][ysq] = s.selpiece;
+	s.game.board[xsq][ysq] = 'u';
 	if      (s.selpiece === '#sun') s.game.rem.sun--;
 	else if (s.selpiece === '#red') s.game.rem.red--;
 	else if (s.selpiece === '#blu') s.game.rem.blu--;
@@ -681,8 +699,8 @@ function undocompmove() {
 
 function docompmove() {
 	var i, j, k, x, y;
-	var candidatemove = { scoredelta: -99, piece1: '#red', edgelist1: 0, piece2: '#sun', edgelist2: 0, piece3: '#sha', edgelist3: 0 };
-	var newcandidatemove = { scoredelta: -99, piece1: '#red', edgelist1: 0, piece2: '#sun', edgelist2: 0, piece3: '#sha', edgelist3: 0 };
+	var candidatemove = { scoredelta: 0, piece1: 'r', edgelist1: 0, piece2: 'u', edgelist2: 0, piece3: 'h', edgelist3: 0 };
+	var newcandidatemove = { scoredelta: 0, piece1: 'r', edgelist1: 0, piece2: 'u', edgelist2: 0, piece3: 'h', edgelist3: 0 };
 
 	for (i = 0; i < s.edgelist.length; i++) {
 		newcandidatemove.edgelist1 = i;
@@ -692,13 +710,13 @@ function docompmove() {
 		s.game.thismove = { red: 0, blu: 0 };
 
 		x = s.edgelist[i][0], y = s.edgelist[i][1];
-		s.game.board[x][y] = '#red';
+		s.game.board[x][y] = 'r';
 		present = { red: true, blu: false };
 		s.game.thispiece = { red: 0, blu: 0 };
 		findroofpoints( x, y, s.game.thispiece, present )
 		s.game.thismove.red += s.game.thispiece.red;
 		s.game.thismove.blu += s.game.thispiece.blu;
-		s.game.compmoves[0] = [ '#red', x, y ]
+		s.game.compmoves[0] = [ 'r', x, y ]
 
 		updateedgelists();			
 
@@ -709,13 +727,13 @@ function docompmove() {
 			s.game = $.extend( true, {}, s.game );
 
 			x = s.sunedgelist[j][0], y = s.sunedgelist[j][1];
-			s.game.board[x][y] = '#sun';
+			s.game.board[x][y] = 'u';
 			present = { red: true, blu: false };
 			s.game.thispiece = { red: 0, blu: 0 };
 			findsunpoints( x, y, s.game.thispiece, present )
 			s.game.thismove.red += s.game.thispiece.red;
 			s.game.thismove.blu += s.game.thispiece.blu;
-			s.game.compmoves[1] = [ '#sun', x, y ]
+			s.game.compmoves[1] = [ 'u', x, y ]
 
 			updateedgelists();			
 
@@ -728,12 +746,12 @@ function docompmove() {
 					s.game = $.extend( true, {}, s.game );
 
 					x = s.shaedgelist[k][0], y = s.shaedgelist[k][1];
-					s.game.board[x][y] = '#sha';
+					s.game.board[x][y] = 'h';
 					s.game.thispiece = { red: 0, blu: 0 };
 					findshapoints( x, y, s.game.thispiece );
 					s.game.thismove.red += s.game.thispiece.red;
 					s.game.thismove.blu += s.game.thispiece.blu;
-					s.game.compmoves[2] = [ '#sha', x, y ]
+					s.game.compmoves[2] = [ 'h', x, y ]
 					newcandidatemove.scoredelta = s.game.thismove.red - s.game.thismove.blu;
 					if (newcandidatemove.scoredelta > candidatemove.scoredelta) {
 						candidatemove = $.extend( true, {}, newcandidatemove );
@@ -751,32 +769,32 @@ function docompmove() {
 	s.game.thismove = { red: 0, blu: 0 };
 
 	x = s.edgelist[candidatemove.edgelist1][0], y = s.edgelist[candidatemove.edgelist1][1];
-	s.game.board[x][y] = '#red';
+	s.game.board[x][y] = 'r';
 	present = { red: true, blu: false };
 	s.game.thispiece = { red: 0, blu: 0 };
 	findroofpoints( x, y, s.game.thispiece, present )
 	s.game.thismove.red += s.game.thispiece.red;
 	s.game.thismove.blu += s.game.thispiece.blu;
-	s.game.compmoves[0] = [ '#sun', x, y ]
+	s.game.compmoves[0] = [ 'r', x, y ]
 	updateedgelists();			
 
 	x = s.sunedgelist[candidatemove.edgelist2][0], y = s.sunedgelist[candidatemove.edgelist2][1];
-	s.game.board[x][y] = '#sun';
+	s.game.board[x][y] = 'u';
 	present = { red: true, blu: false };
 	s.game.thispiece = { red: 0, blu: 0 };
 	findsunpoints( x, y, s.game.thispiece, present )
 	s.game.thismove.red += s.game.thispiece.red;
 	s.game.thismove.blu += s.game.thispiece.blu;
-	s.game.compmoves[1] = [ '#red', x, y ]
+	s.game.compmoves[1] = [ 'u', x, y ]
 	updateedgelists();			
 
 	x = s.shaedgelist[candidatemove.edgelist3][0], y = s.shaedgelist[candidatemove.edgelist3][1];
-	s.game.board[x][y] = '#sha';
+	s.game.board[x][y] = 'h';
 	s.game.thispiece = { red: 0, blu: 0 };
 	findshapoints( x, y, s.game.thispiece );
 	s.game.thismove.red += s.game.thispiece.red;
 	s.game.thismove.blu += s.game.thispiece.blu;
-	s.game.compmoves[2] = [ '#sha', x, y ]
+	s.game.compmoves[2] = [ 'h', x, y ]
 	updateedgelists();
 
 	s.gamehistory.push( s.game );
