@@ -76,14 +76,14 @@
 		[ '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-' ],
 	]),
 
-	var aEdgeList = null;
-	var uEdgeList = null;
-	var hEdgeList = null;
+	var edgeList = new edgeNode( 0, 0 );
+	var uEdgeList = new edgeNode( 0, 0 );
+	var hEdgeList = new edgeNode( 0, 0 );
 
 	var ctx = 0;
 	var selected = '#sun';
 
-	var cursor: { dir: 'n', x: 0, y: 0 };
+	var cursor: { d: 'n', x: 0, y: 0 };
 
 	function padNum( n ) {
 		return ('  ' + n).slice( -2 )
@@ -96,16 +96,16 @@
 	}
 
 	function step() {
-		if      (cursor.dir === 'n') cursor.y--;
-		else if (cursor.dir === 'e') cursor.x++;
-		else if (cursor.dir === 'w') cursor.x--;
-		else if (cursor.dir === 's') cursor.y++;
+		if      (cursor.d === 'n') cursor.y--;
+		else if (cursor.d === 'e') cursor.x++;
+		else if (cursor.d === 'w') cursor.x--;
+		else if (cursor.d === 's') cursor.y++;
 	}
 	function rev() {
-		if      (cursor.dir === 'n') cursor.dir = 's';
-		else if (cursor.dir === 'e') cursor.dir = 'w';
-		else if (cursor.dir === 'w') cursor.dir = 'e';
-		else if (cursor.dir === 's') cursor.dir = 'n';
+		if      (cursor.d === 'n') cursor.d = 's';
+		else if (cursor.d === 'e') cursor.d = 'w';
+		else if (cursor.d === 'w') cursor.d = 'e';
+		else if (cursor.d === 's') cursor.d = 'n';
 	}
 	function addBonus( present ) {
 		if      (present.r) gameState.thisPiece.r += 2;
@@ -129,10 +129,33 @@
 		if (present.b) points.b += pointCount;
 	}
 
-	function findShaSiesta( direction, xsq, ysq, points ) {
+	function findShaSiesta( d, xsq, ysq, points ) {
 		var present = { r: false, b: false };
 
-		cursor = { dir: direction, x: xsq, y: ysq };
+		cursor = { d: d, x: xsq, y: ysq };
+
+		do step();
+		while (at() === 'h');										// walk past shadows
+
+		if ((at() !== 'r') && (at() !== 'b')) { // if this is not a roof
+			return false 													// there is no siesta
+		}
+
+		skipRoofs( present );
+
+		if (at() === 'u') {											// if this is a sun
+			cursor = { d: d, x: xsq, y: ysq };		// go back to the start
+			rev();
+			step();
+			addShaPoints( 1, present, points );		// count pts including this one
+			return true
+		}
+		return false
+	}
+
+	function findShaDouble( d, xsq, ysq, present ) {
+
+		cursor = { d: d, x: xsq, y: ysq };
 
 		do step();
 		while (at() === 'h');
@@ -143,17 +166,12 @@
 
 		skipRoofs( present );
 
-		if (at() === 'u') {
-			cursor = { dir: direction, x: xsq, y: ysq };
-			rev();
-			step();
-			addShaPoints( 1, present, points );
-			return true
+		if ((present.r && present.b) || (at() !== 'u')) {
+			return false
 		}
-		return false
-	}
-	function findshadouble( dir, xsq, ysq, present ) {
-		s.cursor = { dir: dir, x: xsq, y: ysq };
+
+		cursor = { d: d, x: xsq, y: ysq };
+		rev();
 
 		do step();
 		while (at() === 'h');
@@ -162,208 +180,199 @@
 			return false
 		}
 
-		skiproofs( present );
+		skipRoofs( present );
 
-		if ((present.red && present.blu) || (at() !== 'u')) {
-			return false
-		}
-
-		s.cursor = { dir: dir, x: xsq, y: ysq };
-		reverse();
-
-		do step();
-		while (at() === 'h');
-
-		if ((at() !== 'r') && (at() !== 'b')) {
-			return false
-		}
-
-		skiproofs( present );
-
-		if ((present.red && present.blu) || (at() !== 'u')) {
+		if ((present.r && present.b) || (at() !== 'u')) {
 			return false
 		}
 
 		return true
 	}
-	function findshapoints( xsq, ysq, points ) {
+
+	function findShaPoints( xsq, ysq, points ) {
 		var present = {};
 
-		shafindsiesta( 'n', xsq, ysq, points );
-		shafindsiesta( 'e', xsq, ysq, points );
-		shafindsiesta( 'w', xsq, ysq, points );
-		shafindsiesta( 's', xsq, ysq, points );
+		findShaSiesta( 'n', xsq, ysq, points );
+		findShaSiesta( 'e', xsq, ysq, points );
+		findShaSiesta( 'w', xsq, ysq, points );
+		findShaSiesta( 's', xsq, ysq, points );
 
-		present = { red: false, blu: false };
-		if (findshadouble( 'n', xsq, ysq, present )) {
-			bonuspts( present );
+		present = { r: false, b: false };
+		if (findShaDouble( 'n', xsq, ysq, present )) {
+			addBonus( present );
 		}
-		present = { red: false, blu: false };
-		if (findshadouble( 'e', xsq, ysq, present )) {
-			bonuspts( present );
+		present = { r: false, b: false };
+		if (findShaDouble( 'e', xsq, ysq, present )) {
+			addBonus( present );
 		}
 	}
 
-	function sunfindsiesta( direction, xsq, ysq, points ) {
-		var present = { red: false, blu: false };
+	function findSunSiesta( d, xsq, ysq, points ) {
+		var present = { r: false, b: false };
 
-		s.cursor = { dir: direction, x: xsq, y: ysq };
+		cursor = { d: d, x: xsq, y: ysq };
 
 		step();
-		skiproofs( present );
+		skipRoofs( present );
 
 		if (at() !== 'h') {
 			return
 		}
 
-		addpointsfrom( 0, present, points );
+		addShaPoints( 0, present, points );
 	}
-	function findsundouble( dir, xsq, ysq, present ) {
-		var points = { red:0, blu: 0 };
 
-		s.cursor = { dir: dir, x: xsq, y: ysq };
+	function findSunDouble( d, xsq, ysq, present ) {
+		var points = { r: 0, b: 0 };
+
+		cursor = { d: d, x: xsq, y: ysq };
 
 		step();
-		skiproofs( present );
+		skipRoofs( present );
 
-		if ((present.red && present.blu) || (at() !== 'h')) {
+		if ((present.r && present.b) || (at() !== 'h')) {
 			return false
 		}
 
-		addpointsfrom( 0, present, points );
+		addShaPoints( 0, present, points );
 
-		skiproofs( present );
+		skipRoofs( present );
 
-		if ((present.red && present.blu) || (at() !== 'u')) {
+		if ((present.r && present.b) || (at() !== 'u')) {
 			return false
 		}
 
 		return true
 	}
-	function findsunpoints( xsq, ysq, points ) {
+
+	function findSunPoints( xsq, ysq, points ) {
 		var present = {};
 
-		sunfindsiesta( 'n', xsq, ysq, points );
-		sunfindsiesta( 'e', xsq, ysq, points );
-		sunfindsiesta( 'w', xsq, ysq, points );
-		sunfindsiesta( 's', xsq, ysq, points );
+		findSunSiesta( 'n', xsq, ysq, points );
+		findSunSiesta( 'e', xsq, ysq, points );
+		findSunSiesta( 'w', xsq, ysq, points );
+		findSunSiesta( 's', xsq, ysq, points );
 
-		present = { red: false, blu: false };
-		if (findsundouble( 'n', xsq, ysq, present )) {
-			bonuspts( present );
+		present = { r: false, b: false };
+		if (findSunDouble( 'n', xsq, ysq, present )) {
+			addBonus( present );
 		}
-		present = { red: false, blu: false };
-		if (findsundouble( 'e', xsq, ysq, present )) {
-			bonuspts( present );
+		present = { r: false, b: false };
+		if (findSunDouble( 'e', xsq, ysq, present )) {
+			addBonus( present );
 		}
-		present = { red: false, blu: false };
-		if (findsundouble( 'w', xsq, ysq, present )) {
-			bonuspts( present );
+		present = { r: false, b: false };
+		if (findSunDouble( 'w', xsq, ysq, present )) {
+			addBonus( present );
 		}
-		present = { red: false, blu: false };
-		if (findsundouble( 's', xsq, ysq, present )) {
-			bonuspts( present );
+		present = { r: false, b: false };
+		if (findSunDouble( 's', xsq, ysq, present )) {
+			addBonus( present );
 		}
 	}
 
-	function rooffindsiesta( direction, xsq, ysq, present, points ) {
-		s.cursor = { dir: direction, x: xsq, y: ysq };
-		tpres = present;
+	function findRoofSiesta( d, xsq, ysq, present, points ) {
+		var tpres = present;
+
+		cursor = { d: d, x: xsq, y: ysq };
 
 		step();
-		skiproofs( tpres );
+		skipRoofs( tpres );
 
 		if (at() !== 'u') {
 			return
 		}
 
-		s.cursor = { dir: direction, x: xsq, y: ysq };
-		reverse();
+		cursor = { d: d, x: xsq, y: ysq };
+		rev();
 
 		step();
-		skiproofs( tpres );
+		skipRoofs( tpres );
 
 		if (at() !== 'h') {
 			return
 		}
 
-		addpointsfrom( 0, tpres, points );
+		addShaPoints( 0, tpres, points );
 	}
-	function findroofdouble( dir, xsq, ysq, present ) {
-		var points = { red:0, blu: 0 };
 
-		s.cursor = { dir: dir, x: xsq, y: ysq };
+	function findRoofDouble( d, xsq, ysq, present ) {
+		var points = { r: 0, b: 0 };
+
+		cursor = { d: d, x: xsq, y: ysq };
 
 		step();
-		skiproofs( present );
+		skipRoofs( present );
 
-		if ((present.red && present.blu) || (at() !== 'u')) {
+		if ((present.r && present.b) || (at() !== 'u')) {
 			return false
 		}
 
-		s.cursor = { dir: dir, x: xsq, y: ysq };
-		reverse();
+		cursor = { d: d, x: xsq, y: ysq };
+		rev();
 
 		step();
-		skiproofs( present );
+		skipRoofs( present );
 
-		if ((present.red && present.blu) || (at() !== 'h')) {
+		if ((present.r && present.b) || (at() !== 'h')) {
 			return false
 		}
 
-		addpointsfrom( 0, present, points );
+		addShaPoints( 0, present, points );
 
-		skiproofs( present );
+		skipRoofs( present );
 
-		if ((present.red && present.blu) || (at() !== 'u')) {
+		if ((present.r && present.b) || (at() !== 'u')) {
 			return false
 		}
 
 		return true
 	}
-	function findroofpoints( xsq, ysq, points, present ) {
 
-		rooffindsiesta( 'n', xsq, ysq, present, points );
-		rooffindsiesta( 'e', xsq, ysq, present, points );
-		rooffindsiesta( 'w', xsq, ysq, present, points );
-		rooffindsiesta( 's', xsq, ysq, present, points );
+	function findRoofPoints( xsq, ysq, points, present ) {
+		var tpres;
+
+		findRoofSiesta( 'n', xsq, ysq, present, points );
+		findRoofSiesta( 'e', xsq, ysq, present, points );
+		findRoofSiesta( 'w', xsq, ysq, present, points );
+		findRoofSiesta( 's', xsq, ysq, present, points );
 
 		tpres = present;
-		if (findroofdouble( 'n', xsq, ysq, tpres )) {
-			bonuspts( tpres );
+		if (findRoofDouble( 'n', xsq, ysq, tpres )) {
+			addBonus( tpres );
 		}
 		tpres = present;
-		if (findroofdouble( 'e', xsq, ysq, tpres )) {
-			bonuspts( tpres );
+		if (findRoofDouble( 'e', xsq, ysq, tpres )) {
+			addBonus( tpres );
 		}
 		tpres = present;
-		if (findroofdouble( 'w', xsq, ysq, tpres )) {
-			bonuspts( tpres );
+		if (findRoofDouble( 'w', xsq, ysq, tpres )) {
+			addBonus( tpres );
 		}
 		tpres = present;
-		if (findroofdouble( 's', xsq, ysq, tpres )) {
-			bonuspts( tpres );
+		if (findRoofDouble( 's', xsq, ysq, tpres )) {
+			addBonus( tpres );
 		}
 	}
 
-	function haspieceadjacent( xsq, ysq ) {
-		var np = s.game.board[xsq][ysq-1];
-		var ep = s.game.board[xsq-1][ysq];
-		var wp = s.game.board[xsq+1][ysq];
-		var sp = s.game.board[xsq][ysq+1];
+	function hasPieceAdjacent( xsq, ysq ) {
+		var np = gameState.board[xsq][ysq-1];
+		var ep = gameState.board[xsq-1][ysq];
+		var wp = gameState.board[xsq+1][ysq];
+		var sp = gameState.board[xsq][ysq+1];
 		return (
-			((np !== ' ') && (np !== '-') && (np !== '+')) ||
-			((ep !== ' ') && (ep !== '-') && (np !== '+')) ||
-			((wp !== ' ') && (wp !== '-') && (np !== '+')) ||
-			((sp !== ' ') && (sp !== '-') && (np !== '+'))
+			((np !== ' ') && (np !== '-')) ||
+			((ep !== ' ') && (ep !== '-')) ||
+			((wp !== ' ') && (wp !== '-')) ||
+			((sp !== ' ') && (sp !== '-'))
 		)
 	}
-	function hasnoadjacent( type, xsq, ysq ) {
+	function hasNoAdjacent( type, xsq, ysq ) {
 		return (
-			(s.game.board[xsq-1][ysq] !== type) &&
-			(s.game.board[xsq+1][ysq] !== type) &&
-			(s.game.board[xsq][ysq-1] !== type) &&
-			(s.game.board[xsq][ysq+1] !== type)
+			(gameState.board[xsq-1][ysq] !== type) &&
+			(gameState.board[xsq+1][ysq] !== type) &&
+			(gameState.board[xsq][ysq-1] !== type) &&
+			(gameState.board[xsq][ysq+1] !== type)
 		)
 	}
 
