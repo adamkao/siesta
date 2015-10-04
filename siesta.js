@@ -542,7 +542,7 @@ function domove( xsq, ysq ) {
 			$( '#done' ).prop( 'disabled', false );
 		}
 	} else {
-		updateedgelists();		
+		updateedgelists();
 	}
 	updatedisplay();
 }
@@ -570,7 +570,7 @@ function mousemove( e ) {
 }
 function click( e ) {
 	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ), ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
-	if (s.game.board[xsq][ysq] !== '+') return;
+	if (s.game.board[xsq][ysq] !== ' ') return;
 	else if ((s.selpiece === '#sun') && findonlist( s.sunedgelist, xsq, ysq )) {
 		domove( xsq, ysq );
 	}
@@ -688,22 +688,7 @@ function firstclick( e ) {
 	s.game.placed = 1;
 	showscore();
 	s.edgelist = [];
-	if (s.game.board[xe][ysq] === ' ') {
-		s.game.board[xe][ysq] = '+';
-		s.edgelist.push( [xe, ysq] );
-	}
-	if (s.game.board[xw][ysq] === ' ') {
-		s.game.board[xw][ysq] = '+';
-		s.edgelist.push( [xw, ysq] );
-	}
-	if (s.game.board[xsq][yn] === ' ') {
-		s.game.board[xsq][yn] = '+';
-		s.edgelist.push( [xsq, yn] );
-	}
-	if (s.game.board[xsq][ys] === ' ') {
-		s.game.board[xsq][ys] = '+';
-		s.edgelist.push( [xsq, ys] );
-	}
+	updateedgelist();
 	$( '#undo' ).prop( 'disabled', false );
 	$( '#board' ).off( 'mousemove' );
 	$( '#board' ).mousemove( mousemove );
