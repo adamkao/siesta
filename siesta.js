@@ -673,11 +673,7 @@ function firstmousemove( e ) {
 		Math.ceil( (e.pageY - this.offsetTop)/50 ) );
 }
 function firstclick( e ) {
-	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 );
-	var ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
-	var xe = xsq - 1, xw = xsq + 1;
-	var yn = ysq - 1, ys = ysq + 1;
-
+	var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 ), ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
 	if ((s.game.board[xsq][ysq] !== ' ') || (s.selpiece === '#sha')) return;
 	s.gamehistory.push( s.game );
 	s.game = $.extend( true, {}, s.game );
@@ -687,8 +683,12 @@ function firstclick( e ) {
 	else if (s.selpiece === '#blu') s.game.rem.blu--;
 	s.game.placed = 1;
 	showscore();
+<<<<<<< HEAD
 	s.edgelist = [];
 	updateedgelist();
+=======
+	updateedgelists();
+>>>>>>> parent of 74fcc97... partial note edgelist on board
 	$( '#undo' ).prop( 'disabled', false );
 	$( '#board' ).off( 'mousemove' );
 	$( '#board' ).mousemove( mousemove );
