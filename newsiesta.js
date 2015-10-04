@@ -144,7 +144,7 @@
 		skipRoofs( present );
 
 		if (at() === 'u') {											// if this is a sun
-			cursor = { d: d, x: xsq, y: ysq };		// go back to the start
+			cursor = { d: d, x: xsq, y: ysq };		// go back to the start square
 			rev();
 			step();
 			addShaPoints( 1, present, points );		// count pts including this one
