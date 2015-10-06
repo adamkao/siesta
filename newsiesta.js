@@ -21,6 +21,16 @@
 		en.nx = head;
 		head.pr = en;
 	}
+	function findEdge( head, x, y ) {
+		var iterNode = head.nx;
+		while (iterNode.x) {
+			if ((iterNode.x === x) && (iterNode.y === y)) {
+				return true
+			}
+			iterNode = iterNode.nx
+		}
+		return false
+	}
 
 
 	var ctx = 0;
@@ -81,12 +91,12 @@
 			[ '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-' ]
 		]),
 
-		edgeList: new edgeNode( 0, 0 ),
+		edgeList: { x: 0, y: 0 }
 		uEdgeList: new edgeNode( 0, 0 ),
 		hEdgeList: new edgeNode( 0, 0 ),
 
 		edgeMap: ([
-			[ 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1 ],
+			[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
 			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
 			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
 			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
@@ -99,7 +109,7 @@
 			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
 			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
 			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
-			[ 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1 ]
+			[ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
 		]),
 	};
 
@@ -131,7 +141,7 @@
 	var gHistory = [];
 
 
-	var cursor: { d: 'n', x: 0, y: 0 };
+	var cursor = { d: 'n', x: 0, y: 0 };
 
 	function at() {
 		return g.board[cursor.x][cursor.y]
@@ -418,7 +428,7 @@
 			if (hasNoAdjacent( 'h', xsq, ysq )) {
 				// all squares on the edgelist that are not adjacent to shadows
 				// go on the uEdgelist
-				addNode( g.uEdgelist, new edgeNode( xsq, ysq ) );
+				addNode( g.uEdgeList, new edgeNode( xsq, ysq ) );
 			}
 			if (hasNoAdjacent( 'u', xsq, ysq )) {
 				// all squares on the edgelist that are not adjacent to suns
@@ -471,16 +481,18 @@
 			}
 		}
 
-		if 				(selected === '#sun') {
-			iterNode = g.uEdgeList.nx;
-		} else if (selected === '#sha') {
-			iterNode = g.hEdgeList.nx;
-		} else {
-			iterNode = g.edgeList.nx;
-		}
-		while (iterNode.x) {
-			drawImgAt( '#tar', iterNode.x, iterNode.y );
-			iterNode = iterNode.nx;
+		if (g.placed !== 3) {
+			if 				(selected === '#sun') {
+				iterNode = g.uEdgeList.nx;
+			} else if (selected === '#sha') {
+				iterNode = g.hEdgeList.nx;
+			} else {
+				iterNode = g.edgeList.nx;
+			}
+			while (iterNode.x) {
+				drawImgAt( '#tar', iterNode.x, iterNode.y );
+				iterNode = iterNode.nx;
+			}
 		}
 
 		ctx.beginPath();
@@ -516,12 +528,12 @@
 		var outStr = '';
 		var redStr = (
 			padNum( g.remaining.r ) + ' rem ' +
-			padNum( g.score.r ) + ' pts +';
-		)
+			padNum( g.score.r ) + ' pts +'
+		);
 		var bluStr = (
 			padNum( g.remaining.b ) + ' rem ' +
-			padNum( g.score.b ) + ' pts +';
-		)
+			padNum( g.score.b ) + ' pts +'
+		);
 
 		if (g.placed < 3) {
 			redStr += (g.thisMove.r + g.thisPiece.r);
@@ -559,9 +571,25 @@
 	}
 
 	function updateDisplay() {
+
 		drawBoard();
 		drawPieces();
 		showScore();
+
+		if (g.placed === 0) {
+			$( '#undo' ).prop( 'disabled', true );
+			$( '#done' ).prop( 'disabled', true );
+		} else if (g.placed === 3) {
+			$( '#undo' ).prop( 'disabled', false );
+			if (g.thisMove.b) {
+				$( '#done' ).prop( 'disabled', false );
+			} else {
+				$( '#done' ).prop( 'disabled', true );
+			}
+		} else {
+			$( '#undo' ).prop( 'disabled', false );
+			$( '#done' ).prop( 'disabled', true );
+		}
 	}
 
 
@@ -589,15 +617,11 @@
 			g.board[xsq][ysq] = 'b';
 			g.userPlaced[g.placed] = [ 'b', xsq, ysq ];
 		}
-		g.placed++;
 
-		$( '#undo' ).prop( 'disabled', false );
+		g.placed++;
 		if (g.placed === 3) {
 			$( '#board' ).off( 'mousemove' );
 			$( '#board' ).off( 'click' );
-			if (g.thisMove.b) {
-				$( '#done' ).prop( 'disabled', false );
-			}
 		}
 
 		snipNode( g.edgeMap[xsq][ysq] );
@@ -636,7 +660,7 @@
 		else if ((selected === '#sha') && findEdge( g.hEdgeList, xsq, ysq )) {
 			doMove( xsq, ysq );
 		}
-		else if (findEdge( g.edgeList, xsq, ysq ) {
+		else if (findEdge( g.edgeList, xsq, ysq )) {
 			doMove( xsq, ysq );
 		}
 	}
@@ -646,16 +670,15 @@
 
 		g = gHistory.pop();
 
-		$( '#done' ).prop( 'disabled', true );
-
-		if (g.placed === 0) {
-			$( '#undo' ).prop( 'disabled', true );
-			if (g.turn === 1) {
-				$( '#board' ).off( 'mousemove' );
-				$( '#board' ).mousemove( firstMousemove );
-				$( '#board' ).off( 'click' );
-				$( '#board' ).click( firstClick );
-			}
+		if ((g.turn === 1) && (g.placed === 0)) {
+			$( '#board' ).off( 'mousemove' );
+			$( '#board' ).mousemove( firstMousemove );
+			$( '#board' ).off( 'click' );
+			$( '#board' ).click( firstClick );
+		}
+		else if (g.placed === 2) {
+			$( '#board' ).mousemove( mousemove );
+			$( '#board' ).click( click );
 		}
 
 		updateDisplay();
@@ -686,31 +709,7 @@
 
 
 	function done() {
-
-		gHistory.push( g );
-		g = $.extend( true, {}, g );
-		g.score.r += g.thisMove.r;
-		g.score.b += g.thisMove.b;
-		g.thisMove = { r: 0, b: 0 };
-
-		if (
-			(g.remaining.u === 0) || (g.remaining.h === 0) || (g.remaining.b === 0)
-		) {
-			endGame();
-			return
-		}
-
-		g.turn++;
-		g.placed = 0;
-		$( '#undo' ).prop( 'disabled', true );
-		$( '#done' ).prop( 'disabled', true );
-
-		if (docompmove()) {
-			updateDisplay();
-		} else {
-			endGame();
-			return
-		}
+		alert( 'hi' );
 	}
 
 
@@ -754,7 +753,7 @@
 	}
 
 
-	function docompmove() {
+	function doCompMove() {
 		return true;
 	}
 
@@ -766,6 +765,8 @@
 		$( '#board' ).mousemove( firstMousemove );
 		$( '#board' ).click( firstClick );
 		$( '#board' ).mouseleave( updateDisplay );
+		$( '#undo' ).click( undo );
+		$( '#done' ).click( done );
 		updateDisplay();
 	});
 
