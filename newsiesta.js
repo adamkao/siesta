@@ -1,5 +1,9 @@
 (function(){
 
+	function padNum( n ) {
+		return ('  ' + n).slice( -2 )
+	}
+
 	function edgeNode( x, y ) {
 		this.x = x;
 		this.y = y;
@@ -18,8 +22,16 @@
 		head.pr = en;
 	}
 
+
 	var ctx = 0;
+
+	function drawImgAt( piece, xsq, ysq ){
+		ctx.drawImage( $( piece )[0], xsq*50 - 45 , ysq*50 - 45 )
+	}
+
+
 	var selected = '#sun';
+
 	function switchSelected( id ) {
 		$( selected ).css( 'border', 'solid 3px white' );
 		selected = id;
@@ -29,6 +41,7 @@
 		switchSelected( id );
 		updateDisplay();
 	}
+
 
 	var g = {
 
@@ -90,14 +103,33 @@
 		]),
 	};
 
+	function addNewEdges( xsq, ysq ) {
+		var newNode;
+
+		if (g.edgeMap[xsq][ysq-1] === 0) {
+			newNode = new edgeNode( xsq, ysq-1 );
+			g.edgeMap[xsq][ysq-1] = newNode;
+			addNode( g.edgeList, newNode );
+		}
+		if (g.edgeMap[xsq+1][ysq] === 0) {
+			newNode = new edgeNode( xsq+1, ysq );
+			g.edgeMap[xsq+1][ysq] = newNode;
+			addNode( g.edgeList, newNode );
+		}
+		if (g.edgeMap[xsq-1][ysq] === 0) {
+			newNode = new edgeNode( xsq-1, ysq );
+			g.edgeMap[xsq-1][ysq] = newNode;
+			addNode( g.edgeList, newNode );
+		}
+		if (g.edgeMap[xsq][ysq+1] === 0) {
+			newNode = new edgeNode( xsq, ysq+1 );
+			g.edgeMap[xsq][ysq+1] = newNode;
+			addNode( g.edgeList, newNode );
+		}
+	}
+
 	var gHistory = [];
 
-	function padNum( n ) {
-		return ('  ' + n).slice( -2 )
-	}
-	function drawImgAt( piece, xsq, ysq ){
-		ctx.drawImage( $( piece )[0], xsq*50 - 45 , ysq*50 - 45 )
-	}
 
 	var cursor: { d: 'n', x: 0, y: 0 };
 
@@ -116,6 +148,7 @@
 		else if (cursor.d === 'w') cursor.d = 'e';
 		else if (cursor.d === 's') cursor.d = 'n';
 	}
+
 
 	function addBonus( present ) {
 		if      (present.r) g.thisPiece.r += 2;
@@ -144,8 +177,7 @@
 
 		cursor = { d: d, x: xsq, y: ysq };
 
-		do step();
-		while (at() === 'h');										// walk past shadows
+		do step(); while (at() === 'h');				// walk past shadows
 
 		if ((at() !== 'r') && (at() !== 'b')) { // if this is not a roof
 			return false 													// there is no siesta
@@ -167,8 +199,7 @@
 
 		cursor = { d: d, x: xsq, y: ysq };
 
-		do step();
-		while (at() === 'h');
+		do step(); while (at() === 'h');
 
 		if ((at() !== 'r') && (at() !== 'b')) {
 			return false
@@ -183,8 +214,7 @@
 		cursor = { d: d, x: xsq, y: ysq };
 		rev();
 
-		do step();
-		while (at() === 'h');
+		do step(); while (at() === 'h');
 
 		if ((at() !== 'r') && (at() !== 'b')) {
 			return false
@@ -535,7 +565,6 @@
 
 
 	function doMove( xsq, ysq ) {
-		var newNode;
 
 		gHistory.push( g );
 		g = $.extend( true, {}, g );
@@ -572,27 +601,7 @@
 
 		snipNode( g.edgeMap[xsq][ysq] );
 		g.edgeMap[xsq][ysq] = 1;
-
-		if (g.edgeMap[xsq][ysq-1] === 0) {
-			newNode = new edgeNode( xsq, ysq-1 );
-			g.edgeMap[xsq][ysq-1] = newNode;
-			addNode( g.edgeList, newNode );
-		}
-		if (g.edgeMap[xsq+1][ysq] === 0) {
-			newNode = new edgeNode( xsq+1, ysq );
-			g.edgeMap[xsq+1][ysq] = newNode;
-			addNode( g.edgeList, newNode );
-		}
-		if (g.edgeMap[xsq-1][ysq] === 0) {
-			newNode = new edgeNode( xsq-1, ysq );
-			g.edgeMap[xsq-1][ysq] = newNode;
-			addNode( g.edgeList, newNode );
-		}
-		if (g.edgeMap[xsq][ysq+1] === 0) {
-			newNode = new edgeNode( xsq, ysq+1 );
-			g.edgeMap[xsq][ysq+1] = newNode;
-			addNode( g.edgeList, newNode );
-		}
+		addNewEdges( xsq, ysq );
 		updateEdgeLists();
 		updateDisplay();
 	}
@@ -651,6 +660,7 @@
 		updateDisplay();
 	}
 
+
 	function endGame() {
 
 		updateDisplay();
@@ -672,6 +682,7 @@
 		$( '#board' ).off( 'mousemove' );
 		$( '#board' ).off( 'mouseleave' );
 	}
+
 
 	function done() {
 
@@ -701,6 +712,7 @@
 		}
 	}
 
+
 	function firstMousemove( e ) {
 		var i, j;
 
@@ -717,7 +729,9 @@
 		);
 	}
 
+
 	function firstClick( e ) {
+		var newNode;
 		var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 );
 		var ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
 
@@ -729,19 +743,7 @@
 		showScore();
 
 		g.edgeMap[xsq][ysq] = 1;
-
-		if (g.board[xsq][ysq-1] === ' ') {
-			addNode( g.edgeList, new edgeNode( xsq, ysq-1 ) );
-		}
-		if (g.board[xsq+1][ysq] === ' ') {
-			addNode( g.edgeList, new edgeNode( xsq+1, ysq ) );
-		}
-		if (g.board[xsq-1][ysq] === ' ') {
-			addNode( g.edgeList, new edgeNode( xsq-1, ysq ) );
-		}
-		if (g.board[xsq][ysq+1] === ' ') {
-			addNode( g.edgeList, new edgeNode( xsq, ysq+1 ) );
-		}
+		addNewEdges( xsq, ysq );
 
 		$( '#undo' ).prop( 'disabled', false );
 		$( '#board' ).off( 'mousemove' );
@@ -750,9 +752,11 @@
 		$( '#board' ).click( click );
 	}
 
+
 	function docompmove() {
 		return true;
 	}
+
 
 	$( document ).ready( function() {
 		ctx = document.getElementById( 'board' ).getContext( '2d' );
