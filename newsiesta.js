@@ -172,6 +172,7 @@
 		if (present.b) points.b += pointCount;
 	}
 
+
 	function findShaSiesta( d, xsq, ysq, points ) {
 		var present = { r: false, b: false };
 
