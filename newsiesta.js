@@ -1,49 +1,5 @@
 (function(){
 
-	var ctx = 0;
-	var selected = '#sun';
-
-	var g = {
-
-		turn: 1,
-		placed: 0,
-		remaining: { u: 25, h: 75, r: 15, b: 15 },
-
-		score: { r: 0, b: 0 },
-		thisPiece: { r: 0, b: 0 },
-		thisMove: { r: 0, b: 0 },
-
-		userPlaced: ([
-			[ 'b', 0, 0 ],
-			[ 'b', 0, 0 ],
-			[ 'b', 0, 0 ],
-		]),
-		compPlaced: ([
-			[ 'r', 0, 0 ],
-			[ 'r', 0, 0 ],
-			[ 'r', 0, 0 ],
-		]),
-
-		board: ([
-			[ '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
-			[ '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-' ],
-		]),
-	};
-
-	var gHistory = [];
-
 	function edgeNode( x, y ) {
 		this.x = x;
 		this.y = y;
@@ -61,26 +17,80 @@
 		en.nx = head;
 		head.pr = en;
 	}
-	var edgeList = new edgeNode( 0, 0 );
-	var uEdgeList = new edgeNode( 0, 0 );
-	var hEdgeList = new edgeNode( 0, 0 );
 
-	var edgeMap: ([
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-		[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-	]),
+	var ctx = 0;
+	var selected = '#sun';
+	function switchSelected( id ) {
+		$( selected ).css( 'border', 'solid 3px white' );
+		selected = id;
+		$( selected ).css( 'border', 'solid 3px green' );
+	}
+	function handleSelect( id ) {
+		switchSelected( id );
+		updateDisplay();
+	}
+
+	var g = {
+
+		turn: 1,
+		placed: 0,
+		remaining: { u: 25, h: 75, r: 15, b: 15 },
+
+		score: { r: 0, b: 0 },
+		thisPiece: { r: 0, b: 0 },
+		thisMove: { r: 0, b: 0 },
+
+		userPlaced: ([
+			[ 'b', 0, 0 ],
+			[ 'b', 0, 0 ],
+			[ 'b', 0, 0 ]
+		]),
+		compPlaced: ([
+			[ 'r', 0, 0 ],
+			[ 'r', 0, 0 ],
+			[ 'r', 0, 0 ]
+		]),
+
+		board: ([
+			[ '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '-' ],
+			[ '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-' ]
+		]),
+
+		edgeList: new edgeNode( 0, 0 ),
+		uEdgeList: new edgeNode( 0, 0 ),
+		hEdgeList: new edgeNode( 0, 0 ),
+
+		edgeMap: ([
+			[ 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 ],
+			[ 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1 ]
+		]),
+	};
+
+	var gHistory = [];
 
 	function padNum( n ) {
 		return ('  ' + n).slice( -2 )
@@ -141,7 +151,7 @@
 			return false 													// there is no siesta
 		}
 
-		skipRoofs( present );
+		skipRoofs( present );										// walk past roofs
 
 		if (at() === 'u') {											// if this is a sun
 			cursor = { d: d, x: xsq, y: ysq };		// go back to the start square
@@ -364,31 +374,31 @@
 		)
 	}
 	function updateEdgeLists() {
-		var iterNode = edgeList.nx;
+		var iterNode = g.edgeList.nx;
 		var xsq, ysq;
 		var points = { r: 0, b: 0 };
 
-		uEdgeList.pr = uEdgeList.nx = uEdgeList;
-		hEdgeList.pr = hEdgeList.nx = hEdgeList;
+		g.uEdgeList.pr = g.uEdgeList.nx = g.uEdgeList;
+		g.hEdgeList.pr = g.hEdgeList.nx = g.hEdgeList;
 
 		while (iterNode.x) {
 			xsq = iterNode.x;
 			ysq = iterNode.y;
-			if (hasnoadjacent( 'h', xsq, ysq )) {
+			if (hasNoAdjacent( 'h', xsq, ysq )) {
 				// all squares on the edgelist that are not adjacent to shadows
 				// go on the uEdgelist
-				addNode( uEdgelist, new edgeNode( xsq, ysq ) );
+				addNode( g.uEdgelist, new edgeNode( xsq, ysq ) );
 			}
-			if (hasnoadjacent( 'u', xsq, ysq )) {
+			if (hasNoAdjacent( 'u', xsq, ysq )) {
 				// all squares on the edgelist that are not adjacent to suns
 				if (
-					shafindsiesta( 'n', xsq, ysq, points ) ||
-					shafindsiesta( 'e', xsq, ysq, points ) ||
-					shafindsiesta( 'w', xsq, ysq, points ) ||
-					shafindsiesta( 's', xsq, ysq, points )
+					findShaSiesta( 'n', xsq, ysq, points ) ||
+					findShaSiesta( 'e', xsq, ysq, points ) ||
+					findShaSiesta( 'w', xsq, ysq, points ) ||
+					findShaSiesta( 's', xsq, ysq, points )
 				) {
 					// and can be part of a siesta go on the hEdgelist
-					addNode( hEdgeList, new edgeNode( xsq, ysq ) );
+					addNode( g.hEdgeList, new edgeNode( xsq, ysq ) );
 				}
 			}
 			iterNode = iterNode.nx;
@@ -397,8 +407,10 @@
 
 	function drawBoard() {
 		var i;
+
 		ctx.clearRect( 0, 0, 600, 600 );
 		ctx.beginPath();
+
 		for (i=0; i<13; i++) {
 			ctx.moveTo( i*50 + .5, .5 );
 			ctx.lineTo( i*50 + .5, 600.5 );
@@ -409,13 +421,14 @@
 		ctx.lineWidth = 1;
 		ctx.stroke();
 	}
+
 	function drawPieces() {
 		var i, j, p, iterNode;
 
 		for (i = 1; i <= 12; i++) {
 			for (j = 1; j <= 12; j++) {
 				p = g.board[i][j];
-				if (p === 'r') {
+				if 				(p === 'r') {
 					drawImgAt( '#red', i, j );
 				} else if (p === 'b') {
 					drawImgAt( '#blu', i, j );
@@ -427,12 +440,12 @@
 			}
 		}
 
-		if (selected === '#sun') {
-			iterNode = uEdgeList.nx;
+		if 				(selected === '#sun') {
+			iterNode = g.uEdgeList.nx;
 		} else if (selected === '#sha') {
-			iterNode = hEdgeList.nx;
+			iterNode = g.hEdgeList.nx;
 		} else {
-			iterNode = edgeList.nx;
+			iterNode = g.edgeList.nx;
 		}
 		while (iterNode.x) {
 			drawImgAt( '#tar', iterNode.x, iterNode.y );
@@ -467,6 +480,7 @@
 		ctx.lineWidth = 3;
 		ctx.stroke();
 	}
+
 	function showScore() {
 		var outStr = '';
 		var redStr = (
@@ -485,27 +499,21 @@
 			redStr += g.thisMove.r;
 			bluStr += g.thisMove.b;
 			if (g.thisMove.b) {
-				outstr = '<p>3 pieces placed, click done</p>';
+				outStr = '<p>3 pieces placed, click done</p>';
 			} else {
-				outstr = '<p>You must score at least one point, click undo</p>';
+				outStr = '<p>You must score at least one point, click undo</p>';
 			}
 		}
 		if (g.turn === 1) {
 			if (g.placed === 0) {
-				outstr = '<p>Place the first sun</p>'
-				$( selected ).css( 'border', 'solid 3px white' );
-				selected = '#sun';
-				$( selected ).css( 'border', 'solid 3px green' );
+				outStr = '<p>Place the first sun</p>'
+				switchSelected( '#sun' );
 			} else if (g.placed === 1) {
-				outstr = '<p>Place the first roof</p>'
-				$( selected ).css( 'border', 'solid 3px white' );
-				selected = '#blu';
-				$( selected ).css( 'border', 'solid 3px green' );
+				outStr = '<p>Place the first roof</p>'
+				switchSelected( '#blu' );
 			} else if (g.placed === 2) {
-				outstr = '<p>Place the first shadow</p>'
-				$( selected ).css( 'border', 'solid 3px white' );
-				selected = '#sha';
-				$( selected ).css( 'border', 'solid 3px green' );
+				outStr = '<p>Place the first shadow</p>'
+				switchSelected( '#sha' );
 			}
 		}
 		outStr += (
@@ -520,37 +528,22 @@
 	}
 
 	function updateDisplay() {
-		$( '#sun' ).off( 'click' );
-		if ((g.remaining.u === 0) && (selected === '#sun')) {
-			$( selected ).css( 'border', 'solid 3px white' );
-			selected = '#sha';
-			$( selected ).css( 'border', 'solid 3px green' );
-		} else {
-			$( '#sun' ).click( function() {	switchselpiece( '#sun' ) } );
-		}
-		$( '#blu' ).off( 'click' );
-		if ((g.remaining.b === 0) && (selected === '#blu')) {
-			$( selected ).css( 'border', 'solid 3px white' );
-			selected = '#sha';
-			$( selected ).css( 'border', 'solid 3px green' );
-		} else {
-			$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
-		}
 		drawBoard();
 		drawPieces();
 		showScore();
 	}
-	function switchselpiece( id ) {
-		$( selected ).css( 'border', 'solid 3px white' );
-		selected = id;
-		$( selected ).css( 'border', 'solid 3px green' );
-		updateDisplay();
-	}
+
+
 	function doMove( xsq, ysq ) {
+		var newNode;
+
 		gHistory.push( g );
 		g = $.extend( true, {}, g );
 		g.thisMove.r += g.thisPiece.r;
 		g.thisMove.b += g.thisPiece.b;
+		g.thisPiece.r = 0;
+		g.thisPiece.b = 0;
+
 		if      (selected === '#sun') {
 			g.remaining.u--;
 			g.board[xsq][ysq] = 'u';
@@ -567,6 +560,7 @@
 			g.userPlaced[g.placed] = [ 'b', xsq, ysq ];
 		}
 		g.placed++;
+
 		$( '#undo' ).prop( 'disabled', false );
 		if (g.placed === 3) {
 			$( '#board' ).off( 'mousemove' );
@@ -574,9 +568,32 @@
 			if (g.thisMove.b) {
 				$( '#done' ).prop( 'disabled', false );
 			}
-		} else {
-			updateEdgeLists();
 		}
+
+		snipNode( g.edgeMap[xsq][ysq] );
+		g.edgeMap[xsq][ysq] = 1;
+
+		if (g.edgeMap[xsq][ysq-1] === 0) {
+			newNode = new edgeNode( xsq, ysq-1 );
+			g.edgeMap[xsq][ysq-1] = newNode;
+			addNode( g.edgeList, newNode );
+		}
+		if (g.edgeMap[xsq+1][ysq] === 0) {
+			newNode = new edgeNode( xsq+1, ysq );
+			g.edgeMap[xsq+1][ysq] = newNode;
+			addNode( g.edgeList, newNode );
+		}
+		if (g.edgeMap[xsq-1][ysq] === 0) {
+			newNode = new edgeNode( xsq-1, ysq );
+			g.edgeMap[xsq-1][ysq] = newNode;
+			addNode( g.edgeList, newNode );
+		}
+		if (g.edgeMap[xsq][ysq+1] === 0) {
+			newNode = new edgeNode( xsq, ysq+1 );
+			g.edgeMap[xsq][ysq+1] = newNode;
+			addNode( g.edgeList, newNode );
+		}
+		updateEdgeLists();
 		updateDisplay();
 	}
 
@@ -585,50 +602,43 @@
 		var ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
 
 		g.thisPiece = { r: 0, b: 0 };
-		if      ((selected === '#sun') && findonlist( s.sunedgelist, xsq, ysq )) {
+		if 				((selected === '#sun') && findEdge( g.uEdgeList, xsq, ysq )) {
 			findSunPoints( xsq, ysq, g.thisPiece );
-		} else if ((selected === '#sha') && findonlist( s.shaedgelist, xsq, ysq )) {
+		} else if ((selected === '#sha') && findEdge( g.hEdgeList, xsq, ysq )) {
 			findShaPoints( xsq, ysq, g.thisPiece );
-		} else if (findonlist( s.edgelist, xsq, ysq )) {
-			if      (selected === '#red') {
-				present = { r: true, b: false };
-				findRoofPoints( xsq, ysq, g.thisPiece, present );
-			}
-			else if (selected === '#blu') {
-				present = { r: false, b: true };
-				findRoofPoints( xsq, ysq, g.thisPiece, present );
-			}
+		} else if (findEdge( g.edgeList, xsq, ysq )) {
+			present = { r: false, b: true };
+			findRoofPoints( xsq, ysq, g.thisPiece, present );
 		}
 		updateDisplay();
 		drawImgAt( selected, xsq, ysq );
 	}
+
 	function click( e ) {
 		var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 );
 		var ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
 
 		if (g.board[xsq][ysq] !== ' ') return;
 
-		else if ((selected === '#sun') && findonlist( s.sunedgelist, xsq, ysq )) {
+		else if ((selected === '#sun') && findEdge( g.uEdgeList, xsq, ysq )) {
 			doMove( xsq, ysq );
 		}
-		else if ((selected === '#sha') && findonlist( s.shaedgelist, xsq, ysq )) {
+		else if ((selected === '#sha') && findEdge( g.hEdgeList, xsq, ysq )) {
 			doMove( xsq, ysq );
 		}
-		else if (((selected === '#red') || (selected === '#blu')) && findonlist( s.edgelist, xsq, ysq )) {
+		else if (findEdge( g.edgeList, xsq, ysq ) {
 			doMove( xsq, ysq );
 		}
 	}
+
 	function undo() {
 		if (!gHistory.length) return;
+
 		g = gHistory.pop();
-		if (g.placed === 2) {
-			$( '#done' ).prop( 'disabled', true );
-			$( '#undo' ).prop( 'disabled', false );
-			$( '#board' ).off( 'mousemove' );
-			$( '#board' ).mousemove( mousemove );
-			$( '#board' ).off( 'click' );
-			$( '#board' ).click( click );
-		} else if (g.placed === 0) {
+
+		$( '#done' ).prop( 'disabled', true );
+
+		if (g.placed === 0) {
 			$( '#undo' ).prop( 'disabled', true );
 			if (g.turn === 1) {
 				$( '#board' ).off( 'mousemove' );
@@ -637,71 +647,63 @@
 				$( '#board' ).click( firstClick );
 			}
 		}
-		updateEdgeLists();
+
 		updateDisplay();
 	}
 
+	function endGame() {
+
+		updateDisplay();
+
+		if (g.score.b > g.score.r) {
+			$( '#output' ).html( '<h3>You win!</h3>' );
+		} else if (g.score.b < g.score.r) {
+			$( '#output' ).html( '<h3>Computer wins!</h3>' );
+		} else {
+			$( '#output' ).html( '<h3>Tie game!</h3>' );
+		}
+
+		$( '#sun' ).off( 'click' );
+		$( '#sha' ).off( 'click' );
+		$( '#blu' ).off( 'click' );
+		$( '#undo' ).prop( 'disabled', true );
+		$( '#done' ).prop( 'disabled', true );
+		$( '#board' ).off( 'click' );
+		$( '#board' ).off( 'mousemove' );
+		$( '#board' ).off( 'mouseleave' );
+	}
+
 	function done() {
-		var outStr;
 
 		gHistory.push( g );
 		g = $.extend( true, {}, g );
 		g.score.r += g.thisMove.r;
 		g.score.b += g.thisMove.b;
 		g.thisMove = { r: 0, b: 0 };
+
 		if (
-			(g.remaining.u === 0) ||
-			(g.remaining.h === 0) ||
-			(g.remaining.b === 0)
+			(g.remaining.u === 0) || (g.remaining.h === 0) || (g.remaining.b === 0)
 		) {
-			$( '#undo' ).prop( 'disabled', true );
-			$( '#done' ).prop( 'disabled', true );
-			$( '#board' ).off( 'click' );
-			$( '#board' ).off( 'mousemove' );
-			$( '#board' ).off( 'mouseleave' );
-			updateDisplay();
-			if (g.score.b > g.score.r) {
-				$( '#output' ).html( '<h3>You win!</h3>' );
-			} else if (g.score.b < g.score.r) {
-				$( '#output' ).html( '<h3>Computer wins!</h3>' );
-			} else {
-				$( '#output' ).html( '<h3>Tie game!</h3>' );
-			}
-			$( '#sun' ).off( 'click' );
-			$( '#sha' ).off( 'click' );
-			$( '#blu' ).off( 'click' );
+			endGame();
 			return
 		}
+
 		g.turn++;
 		g.placed = 0;
 		$( '#undo' ).prop( 'disabled', true );
 		$( '#done' ).prop( 'disabled', true );
-		$( '#board' ).mousemove( mousemove );
-		$( '#board' ).click( click );
-		$( '#sun' ).click( function() {	switchselpiece( '#sun' ) } );
-		$( '#sha' ).click( function() {	switchselpiece( '#sha' ) } );
-		$( '#blu' ).click( function() {	switchselpiece( '#blu' ) } );
-		updateEdgeLists();
+
 		if (docompmove()) {
-			updateEdgeLists();
 			updateDisplay();
 		} else {
-			updateDisplay();
-			if (g.score.b > g.score.r) {
-				$( '#output' ).html( '<h3>You win!</h3>' );
-			} else if (g.score.b < g.score.r) {
-				$( '#output' ).html( '<h3>Computer wins!</h3>' );
-			} else {
-				$( '#output' ).html( '<h3>Tie game!</h3>' );
-			}
-			$( '#sun' ).off( 'click' );
-			$( '#sha' ).off( 'click' );
-			$( '#blu' ).off( 'click' );
+			endGame();
+			return
 		}
 	}
 
 	function firstMousemove( e ) {
 		var i, j;
+
 		drawBoard();
 		for (i = 1; i <= 12; i++) {
 			for (j = 1; j <= 12; j++) {
@@ -709,21 +711,38 @@
 			}
 		}
 		drawImgAt(
-			selected,
+			'#sun',
 			Math.ceil( (e.pageX - this.offsetLeft)/50 ),
 			Math.ceil( (e.pageY - this.offsetTop)/50 )
 		);
 	}
+
 	function firstClick( e ) {
 		var xsq = Math.ceil( (e.pageX - this.offsetLeft)/50 );
 		var ysq = Math.ceil( (e.pageY - this.offsetTop)/50 );
+
 		gHistory.push( g );
 		g = $.extend( true, {}, g );
 		g.board[xsq][ysq] = 'u';
 		g.remaining.u--;
 		g.placed = 1;
 		showScore();
-		updateEdgeLists();
+
+		g.edgeMap[xsq][ysq] = 1;
+
+		if (g.board[xsq][ysq-1] === ' ') {
+			addNode( g.edgeList, new edgeNode( xsq, ysq-1 ) );
+		}
+		if (g.board[xsq+1][ysq] === ' ') {
+			addNode( g.edgeList, new edgeNode( xsq+1, ysq ) );
+		}
+		if (g.board[xsq-1][ysq] === ' ') {
+			addNode( g.edgeList, new edgeNode( xsq-1, ysq ) );
+		}
+		if (g.board[xsq][ysq+1] === ' ') {
+			addNode( g.edgeList, new edgeNode( xsq, ysq+1 ) );
+		}
+
 		$( '#undo' ).prop( 'disabled', false );
 		$( '#board' ).off( 'mousemove' );
 		$( '#board' ).mousemove( mousemove );
@@ -731,128 +750,7 @@
 		$( '#board' ).click( click );
 	}
 
-	function undocompmove() {
-		g = gHistory.pop();
-		updateEdgeLists();
-	}
-
 	function docompmove() {
-		var i, j, k, x, y;
-		var candidatemove = { scoredelta: 0, piece1: 'r', edgelist1: 0, piece2: 'u', edgelist2: 0, piece3: 'h', edgelist3: 0 };
-		var newcandidatemove = { scoredelta: 0, piece1: 'r', edgelist1: 0, piece2: 'u', edgelist2: 0, piece3: 'h', edgelist3: 0 };
-
-		for (i = 0; i < s.edgelist.length; i++) {
-			newcandidatemove.edgelist1 = i;
-
-			gHistory.push( g );
-			g = $.extend( true, {}, g );
-			g.thismove = { r: 0, b: 0 };
-
-			x = s.edgelist[i][0], y = s.edgelist[i][1];
-			g.board[x][y] = 'r';
-			present = { r: true, b: false };
-			g.thisPiece = { r: 0, b: 0 };
-			findRoofPoints( x, y, g.thisPiece, present )
-			g.thisMove.r += g.thisPiece.red;
-			g.thisMove.b += g.thisPiece.blu;
-			g.compmoves[0] = [ 'r', x, y ]
-
-			updateEdgeLists();
-
-			for (j = 0; j < s.sunedgelist.length; j++) {
-				newcandidatemove.edgelist2 = j;
-
-				gHistory.push( g );
-				g = $.extend( true, {}, g );
-
-				x = s.sunedgelist[j][0], y = s.sunedgelist[j][1];
-				g.board[x][y] = 'u';
-				present = { r: true, b: false };
-				g.thisPiece = { r: 0, b: 0 };
-				findSunPoints( x, y, g.thisPiece, present )
-				g.thisMove.r += g.thisPiece.red;
-				g.thisMove.b += g.thisPiece.blu;
-				g.compmoves[1] = [ 'u', x, y ]
-
-				updateEdgeLists();
-
-				if (s.shaedgelist.length) {
-
-					for (k = 0; k < s.shaedgelist.length; k++) {
-						newcandidatemove.edgelist3 = k;
-
-						gHistory.push( g );
-						g = $.extend( true, {}, g );
-
-						x = s.shaedgelist[k][0], y = s.shaedgelist[k][1];
-						g.board[x][y] = 'h';
-						g.thisPiece = { r: 0, b: 0 };
-						findShaPoints( x, y, g.thisPiece );
-						g.thisMove.r += g.thisPiece.red;
-						g.thisMove.b += g.thisPiece.blu;
-						g.compmoves[2] = [ 'h', x, y ]
-						newcandidatemove.scoredelta = g.thisMove.r - g.thisMove.b;
-						if (newcandidatemove.scoredelta > candidatemove.scoredelta) {
-							candidatemove = $.extend( true, {}, newcandidatemove );
-						}
-						g = gHistory.pop();
-						updateEdgeLists();
-					}
-				}
-				g = gHistory.pop();
-				updateEdgeLists();
-			}
-			g = gHistory.pop();
-			updateEdgeLists();
-		}
-		g.thismove = { r: 0, b: 0 };
-
-		x = s.edgelist[candidatemove.edgelist1][0], y = s.edgelist[candidatemove.edgelist1][1];
-		g.board[x][y] = 'r';
-		present = { r: true, b: false };
-		g.thisPiece = { r: 0, b: 0 };
-		findRoofPoints( x, y, g.thisPiece, present )
-		g.thisMove.r += g.thisPiece.red;
-		g.thisMove.b += g.thisPiece.blu;
-		g.compmoves[0] = [ 'r', x, y ]
-		updateEdgeLists();
-
-		x = s.sunedgelist[candidatemove.edgelist2][0], y = s.sunedgelist[candidatemove.edgelist2][1];
-		g.board[x][y] = 'u';
-		present = { r: true, b: false };
-		g.thisPiece = { r: 0, b: 0 };
-		findSunPoints( x, y, g.thisPiece, present )
-		g.thisMove.r += g.thisPiece.red;
-		g.thisMove.b += g.thisPiece.blu;
-		g.compmoves[1] = [ 'u', x, y ]
-		updateEdgeLists();
-
-		x = s.shaedgelist[candidatemove.edgelist3][0], y = s.shaedgelist[candidatemove.edgelist3][1];
-		g.board[x][y] = 'h';
-		g.thisPiece = { r: 0, b: 0 };
-		findShaPoints( x, y, g.thisPiece );
-		g.thisMove.r += g.thisPiece.red;
-		g.thisMove.b += g.thisPiece.blu;
-		g.compmoves[2] = [ 'h', x, y ]
-		updateEdgeLists();
-
-		gHistory.push( g );
-		g = $.extend( true, {}, g );
-		g.score.r += g.thisMove.r;
-		g.score.b += g.thisMove.b;
-		g.thisPiece = { r: 0, b: 0 };
-		g.thismove = { r: 0, b: 0 };
-		g.remaining.u--;
-		g.remaining.r--;
-		g.remaining.h--;
-		if ((g.remaining.u === 0) || (g.remaining.h === 0) || (g.remaining.r === 0)) {
-			$( '#undo' ).prop( 'disabled', true );
-			$( '#done' ).prop( 'disabled', true );
-			$( '#board' ).off( 'click' );
-			$( '#board' ).off( 'mousemove' );
-			$( '#board' ).off( 'mouseleave' );
-			return false;
-		}
 		return true;
 	}
 
