@@ -323,7 +323,7 @@ function hasnoadjacent( type, xsq, ysq ) {
 }
 
 function updateedgelists() {
-	var i, xsq, ysq, points = { red: 0, blu: 0 };
+	var i, j, xsq, ysq, points = { red: 0, blu: 0 };
 
 	// all empty squares adjacent to pieces are on the edgelist
 	s.edgelist = [];

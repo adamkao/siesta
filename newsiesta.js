@@ -1,3 +1,5 @@
+'use strict';
+
 (function(){
 
 	function padNum( n ) {
@@ -91,7 +93,7 @@
 			[ '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-' ]
 		]),
 
-		edgeList: { x: 0, y: 0 }
+		edgeList: new edgeNode( 0, 0 ),
 		uEdgeList: new edgeNode( 0, 0 ),
 		hEdgeList: new edgeNode( 0, 0 ),
 
@@ -669,6 +671,9 @@
 		if (!gHistory.length) return;
 
 		g = gHistory.pop();
+		g.edgeList = new edgeNode( 0, 0 );
+		g.uEdgeList = new edgeNode( 0, 0 );
+		g.hEdgeList = new edgeNode( 0, 0 );
 
 		if ((g.turn === 1) && (g.placed === 0)) {
 			$( '#board' ).off( 'mousemove' );
